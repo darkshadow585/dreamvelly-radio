@@ -154,8 +154,8 @@ export default function App() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#0a0705] text-white flex flex-col justify-between">
-      {/* 1. Atmospheric Background Scene & Dust Canvas */}
-      <BackgroundScene />
+      {/* 1. Atmospheric Background Scene & Dust/Rain Canvas */}
+      <BackgroundScene activePlaylist={activePlaylist} />
 
       {/* 2. Top Header Navigation (Logo, Live Listeners Pill, Playlist Pill) */}
       <HeaderNav

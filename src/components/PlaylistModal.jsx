@@ -47,24 +47,26 @@ export default function PlaylistModal({
           </button>
         </div>
 
-        {/* Playlist Channel Selector Tabs */}
-        <div className="p-3 bg-black/25 border-b border-white/5 flex gap-2">
+        {/* Playlist Channel Selector Tabs (2x2 Grid for 4 Channels) */}
+        <div className="p-2.5 sm:p-3 bg-black/30 border-b border-white/10 grid grid-cols-2 gap-2">
           {PLAYLISTS.map((pl) => {
             const isActive = pl.id === activePlaylistId;
             return (
               <button
                 key={pl.id}
                 onClick={() => onSelectPlaylist(pl.id)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                className={`flex items-center justify-between gap-1.5 py-2 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all ${
                   isActive
-                    ? 'bg-amber-400/20 border border-amber-400/40 text-amber-200 shadow-md'
-                    : 'bg-white/[0.04] border border-white/5 text-white/60 hover:text-white hover:bg-white/[0.08]'
+                    ? 'bg-amber-400/20 border border-amber-400/40 text-amber-200 shadow-md ring-1 ring-amber-400/20'
+                    : 'bg-white/[0.04] border border-white/5 text-white/65 hover:text-white hover:bg-white/[0.08]'
                 }`}
               >
-                <span>{pl.icon || '🎵'}</span>
-                <span className="truncate font-semibold tracking-wide">{pl.name}</span>
-                <span className="text-[10px] opacity-60 hidden sm:inline font-mono">
-                  ({pl.songs.length})
+                <div className="flex items-center gap-1.5 truncate">
+                  <span>{pl.icon || '🎵'}</span>
+                  <span className="truncate font-semibold tracking-wide">{pl.name}</span>
+                </div>
+                <span className="text-[10px] opacity-60 font-mono flex-shrink-0">
+                  {pl.songs.length}
                 </span>
               </button>
             );

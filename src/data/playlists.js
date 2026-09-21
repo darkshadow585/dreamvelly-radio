@@ -610,5 +610,481 @@ export const PLAYLISTS = [
         get cover() { return ytThumb(this.id); }
       }
     ]
+  },
+  {
+    id: "barish",
+    name: "BARISH 🌧️",
+    titleLine1: "BARISH",
+    titleLine2: "RADIO",
+    badge: "Monsoon & Acoustic Melodies",
+    description: "Soul-stirring rainy day melodies, acoustic rain ballads & monsoon nostalgia curated by KS",
+    icon: "🌧️",
+    bg: "/barish_bg.jpg",
+    hasRainEffect: true,
+    songs: [
+      {
+        id: "blRe2wQP-_U",
+        title: "Aise Kyun",
+        artist: "Anurag Saikia, Rekha Bhardwaj",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "LMEdbBK4bk0",
+        title: "Khoj (Passing By)",
+        artist: "When Chai Met Toast",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "A_dfcNg2MOg",
+        title: "Buniyaad",
+        artist: "The Yellow Diary",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "2zjboLjIt8w",
+        title: "Marz",
+        artist: "The Yellow Diary",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "xOsZj48vXGA",
+        title: "Roz",
+        artist: "The Yellow Diary",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "miXdVbIm5BY",
+        title: "Tune Kaha",
+        artist: "Prateek Kuhad",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "pRLOXUlIUG0",
+        title: "Mulaqat",
+        artist: "Prateek Kuhad",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "wzKdGxq3huY",
+        title: "Oh Love",
+        artist: "Nikhil D'Souza",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "5LBB6OV3Ano",
+        title: "Mere Liye Tum Kaafi Ho",
+        artist: "Ayushmann Khurrana",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "8367ETnagHo",
+        title: "Tera Woh Pyaar",
+        artist: "Momina Mustehsan & Asim Azhar",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "2vKMY75kvjI",
+        title: "Aankhon Se Batana",
+        artist: "Dikshant",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "6eGCi4SVy94",
+        title: "Doobey",
+        artist: "Lothika, OAFF, Savera",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "0BOekEZXjmQ",
+        title: "Husn Parcham",
+        artist: "Raja Kumari",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "6Z-CpOkkUFo",
+        title: "Mann Kasturi Re",
+        artist: "Indian Ocean",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "cAu4H8olnrs",
+        title: "Sajni",
+        artist: "Strings",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "pba_YmWDAIU",
+        title: "Ranjish Hi Sahi",
+        artist: "Ali Sethi",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "9sekgEXGm-E",
+        title: "Faasle",
+        artist: "Kaavish",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "nAIxCBm3ULk",
+        title: "Nindiya Re",
+        artist: "Kaavish",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "aRzbHxJZSTo",
+        title: "Bikhra",
+        artist: "Abdul Hannan & Rovalio",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "Qwm6BSGrOq0",
+        title: "Iraaday",
+        artist: "Abdul Hannan & Rovalio",
+        movie: "Single",
+        year: "2026",
+        duration: "3:10",
+        get cover() { return ytThumb(this.id); }
+      }
+    ]
+  },
+  {
+    id: "english-indie",
+    name: "ENGLISH INDIE ☕",
+    titleLine1: "ENGLISH",
+    titleLine2: "INDIE",
+    badge: "Acoustic Folk & Midnight Waves",
+    description: "Timeless international indie folk, ambient acoustics & midnight coffee vibes curated by KS",
+    icon: "☕",
+    bg: "/dreamevelly_bg.jpg",
+    hasRainEffect: false,
+    songs: [
+      {
+        id: "KtlgYxa6BMU",
+        title: "The Night We Met",
+        artist: "Lord Huron",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "TWcyIpul8OE",
+        title: "Holocene",
+        artist: "Bon Iver",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "SdSCCwtNEjA",
+        title: "Cherry Wine (Live)",
+        artist: "Hozier",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "oUFJJNQGwhk",
+        title: "To Build a Home",
+        artist: "The Cinematic Orchestra",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "8inJtTG_DuU",
+        title: "Bloom",
+        artist: "The Paper Kites",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "OmKAn8rNbKg",
+        title: "Anchor",
+        artist: "Novo Amor",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "nhd7UKqjTcw",
+        title: "State Lines",
+        artist: "Novo Amor",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "2QT5eGHCJdE",
+        title: "Youth",
+        artist: "Daughter",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "GnkzvAXWV-0",
+        title: "Smother",
+        artist: "Daughter",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "MZSCXE4CpCA",
+        title: "Roslyn",
+        artist: "Bon Iver & St. Vincent",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "3w68krri0bw",
+        title: "re: Stacks",
+        artist: "Bon Iver",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "TSBs-hiapo4",
+        title: "Lua",
+        artist: "Bright Eyes",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "AqyAmmEkVvI",
+        title: "The Stable Song",
+        artist: "Gregory Alan Isakov",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "lz2qpnRB5_E",
+        title: "Amsterdam",
+        artist: "Gregory Alan Isakov",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "RGVmhrfQqzg",
+        title: "Flightless Bird, American Mouth",
+        artist: "Iron & Wine",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "Nd-A-iiPoLg",
+        title: "Naked As We Came",
+        artist: "Iron & Wine",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "4WTt69YO2VI",
+        title: "Mystery of Love",
+        artist: "Sufjan Stevens",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "IDgR3FNlsUM",
+        title: "Visions of Gideon",
+        artist: "Sufjan Stevens",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "vty06CRW7cw",
+        title: "Like Real People Do",
+        artist: "Hozier",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "mtf7hC17IBM",
+        title: "All I Want",
+        artist: "Kodaline",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "Yj6V_a1-EUA",
+        title: "I Found",
+        artist: "Amber Run",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "4AWRHBHDVlQ",
+        title: "Anchor",
+        artist: "Mindy Gledhill",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "_lhkfaqFmpM",
+        title: "Medicine",
+        artist: "Daughter",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "xUBYzpCNQ1I",
+        title: "First Day of My Life",
+        artist: "Bright Eyes",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "JgumMOMHpns",
+        title: "Big Black Car",
+        artist: "Gregory Alan Isakov",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "A938Em4iAeM",
+        title: "The Wolves (Act I and II)",
+        artist: "Bon Iver",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "SDNA934EEVk",
+        title: "A Walk",
+        artist: "Tycho",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "dzNvk80XY9s",
+        title: "Saturn",
+        artist: "Sleeping At Last",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "M-AMu_iAcf8",
+        title: "Turning Page",
+        artist: "Sleeping At Last",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "xPe5ZQx0OpQ",
+        title: "From the Morning",
+        artist: "Nick Drake",
+        movie: "Indie Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      }
+    ]
   }
 ];
