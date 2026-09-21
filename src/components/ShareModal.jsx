@@ -15,10 +15,10 @@ export default function ShareModal({ isOpen, onClose, currentSong, currentPlayli
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md bg-[#1a1410] border border-white/15 rounded-3xl shadow-2xl overflow-hidden p-6"
+        className="relative w-full max-w-md bg-[#1a1410] border border-white/15 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden p-5 sm:p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

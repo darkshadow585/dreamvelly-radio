@@ -10,10 +10,31 @@ export default function CoverflowCarousel({
   const containerRef = useRef(null);
   const [dragStartX, setDragStartX] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [windowWidth, setWindowWidth] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth : 1200
+  );
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const totalSongs = songs.length;
   const line1 = activePlaylist?.titleLine1 || 'DREAMVELLY';
   const line2 = activePlaylist?.titleLine2 || '2026';
+
+  // Responsive device classification based on state
+  const isSmallMobile = windowWidth < 380;
+  const isMobile = windowWidth < 640;
+  const isTablet = windowWidth >= 640 && windowWidth < 1024;
+
+  const cardWidth = isSmallMobile ? 152 : isMobile ? 165 : isTablet ? 185 : 206;
+  const cardHeight = isSmallMobile ? 198 : isMobile ? 212 : isTablet ? 236 : 256;
+  const carouselHeight = isMobile ? '236px' : '280px';
+  // On mobile, modest negative margin (-14px) ensures line 2 "RADIO" is completely readable
+  // On desktop, -62px overlaps display typography cleanly as in Image 1
+  const carouselMarginTop = isSmallMobile ? '-10px' : isMobile ? '-14px' : '-62px';
 
   // Keyboard navigation (Arrow keys)
   useEffect(() => {
@@ -42,9 +63,9 @@ export default function CoverflowCarousel({
     const clientX = e.changedTouches ? e.changedTouches[0].clientX : e.clientX;
     const diff = clientX - dragStartX;
 
-    if (diff > 45) {
+    if (diff > 40) {
       onSelectSong((activeIndex - 1 + totalSongs) % totalSongs);
-    } else if (diff < -45) {
+    } else if (diff < -40) {
       onSelectSong((activeIndex + 1) % totalSongs);
     }
     setDragStartX(null);
@@ -52,14 +73,14 @@ export default function CoverflowCarousel({
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-start select-none overflow-hidden pt-12 sm:pt-10 md:pt-7">
+    <div className="absolute inset-0 flex flex-col items-center justify-start pt-16 sm:pt-10 md:pt-7 select-none overflow-hidden">
       {/* 
         1. HERO HEADING — DYNAMIC PLAYLIST TITLE:
         Teko bold display font, warm off-white, tight leading, sitting behind the carousel cards.
       */}
       <div className="flex flex-col items-center justify-center z-[5] pointer-events-none px-4 select-none">
         <h1
-          className="text-[4rem] sm:text-[5.6rem] md:text-[6.8rem] lg:text-[7.8rem] font-bold text-[#F4EFE8] text-center leading-[0.88] uppercase transition-all duration-300"
+          className="text-[3.4rem] sm:text-[4.8rem] md:text-[6.4rem] lg:text-[7.6rem] font-bold text-[#F4EFE8] text-center leading-[0.88] uppercase transition-all duration-300"
           style={{
             fontFamily: '"Teko", "TekoHindi", sans-serif',
             letterSpacing: '0.02em',
@@ -72,9 +93,8 @@ export default function CoverflowCarousel({
 
       {/* 
         2. 5-CARD DEPTH CAROUSEL:
-        Positioned right below "DREAMEVELLY", overlapping line 2 "2026".
-        Center card is dominant, facing forward flat (no harsh 3D angle).
-        Circular offset logic ensures 2 cards on left and 2 cards on right are ALWAYS visible.
+        Positioned right below title, overlapping line 2 cleanly without obscuring the text.
+        Center card is dominant, facing forward flat.
       */}
       <div
         ref={containerRef}
@@ -84,8 +104,8 @@ export default function CoverflowCarousel({
         onTouchEnd={handlePointerUp}
         className="relative z-10 w-full flex items-center justify-center cursor-grab active:cursor-grabbing select-none"
         style={{
-          height: '290px',
-          marginTop: '-62px', // Overlaps line 2 cleanly
+          height: carouselHeight,
+          marginTop: carouselMarginTop,
         }}
       >
         {songs.map((song, idx) => {
@@ -100,13 +120,6 @@ export default function CoverflowCarousel({
           if (absOffset > 3) return null;
 
           const isCenter = offset === 0;
-
-          // Responsive sizing & spacing
-          const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
-          const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024;
-
-          const cardWidth = isMobile ? 165 : isTablet ? 190 : 218;
-          const cardHeight = isMobile ? 210 : isTablet ? 240 : 268;
 
           // Depth Curve calculations:
           let translateX = 0;
@@ -124,31 +137,31 @@ export default function CoverflowCarousel({
             brightness = 1;
             blurAmount = 0;
           } else if (absOffset === 1) {
-            const step1 = isMobile ? 112 : isTablet ? 134 : 154;
+            const step1 = isSmallMobile ? 78 : isMobile ? 84 : isTablet ? 128 : 148;
             translateX = offset * step1;
-            scale = isMobile ? 0.86 : 0.88;
+            scale = isMobile ? 0.84 : 0.88;
             zIndex = 20;
-            opacity = 0.92;
+            opacity = isMobile ? 0.88 : 0.92;
             brightness = 0.78;
             blurAmount = 0;
           } else if (absOffset === 2) {
-            const step1 = isMobile ? 112 : isTablet ? 134 : 154;
-            const step2 = isMobile ? 90 : isTablet ? 115 : 128;
+            const step1 = isSmallMobile ? 78 : isMobile ? 84 : isTablet ? 128 : 148;
+            const step2 = isSmallMobile ? 54 : isMobile ? 62 : isTablet ? 105 : 122;
             translateX = Math.sign(offset) * (step1 + step2);
-            scale = isMobile ? 0.72 : 0.75;
+            scale = isMobile ? 0.68 : 0.75;
             zIndex = 10;
-            opacity = 0.72;
-            brightness = 0.58;
-            blurAmount = 0.7;
+            opacity = isMobile ? 0.30 : 0.72;
+            brightness = isMobile ? 0.40 : 0.58;
+            blurAmount = isMobile ? 1.2 : 0.7;
           } else {
             // absOffset === 3 (entering/exiting buffer)
-            const step1 = isMobile ? 112 : isTablet ? 134 : 154;
-            const step2 = isMobile ? 90 : isTablet ? 115 : 128;
-            translateX = Math.sign(offset) * (step1 + step2 + 110);
-            scale = 0.62;
+            const step1 = isSmallMobile ? 78 : isMobile ? 84 : isTablet ? 128 : 148;
+            const step2 = isSmallMobile ? 54 : isMobile ? 62 : isTablet ? 105 : 122;
+            translateX = Math.sign(offset) * (step1 + step2 + (isMobile ? 50 : 100));
+            scale = isMobile ? 0.55 : 0.62;
             zIndex = 5;
             opacity = 0;
-            brightness = 0.4;
+            brightness = 0.3;
             blurAmount = 2;
           }
 

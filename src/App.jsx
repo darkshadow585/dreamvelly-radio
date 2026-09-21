@@ -153,7 +153,7 @@ export default function App() {
   }, [radio.togglePlay, radio.toggleMute, handleToggleFullscreen]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-[#0a0705] text-white flex flex-col justify-between">
+    <div className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#0a0705] text-white flex flex-col justify-between">
       {/* 1. Atmospheric Background Scene & Dust/Rain Canvas */}
       <BackgroundScene activePlaylist={activePlaylist} />
 
@@ -165,7 +165,7 @@ export default function App() {
       />
 
       {/* 3. 3D Coverflow Song Changing Carousel */}
-      <main className="relative z-10 flex-1">
+      <main className="relative z-10 flex-1 w-full min-h-0">
         <CoverflowCarousel
           songs={activePlaylist.songs}
           activeIndex={currentSongIndex}

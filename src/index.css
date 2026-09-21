@@ -24,6 +24,7 @@
     color: #F4EFE8;
     user-select: none;
     -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
     overflow: hidden;
     font-family: 'Inter', system-ui, sans-serif;
   }
