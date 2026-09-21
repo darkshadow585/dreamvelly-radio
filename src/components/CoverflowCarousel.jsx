@@ -169,34 +169,13 @@ export default function CoverflowCarousel({
             >
               {/* 1. Ambient Golden Halo / Glow behind Center Card */}
               {isCenter && (
-                <>
-                  {/* Outer atmospheric aura */}
-                  <div
-                    className={`absolute -inset-2.5 rounded-[24px] pointer-events-none transition-all duration-700 -z-10 ${
-                      isPlaying
-                        ? 'bg-gradient-to-t from-amber-500/50 via-amber-400/40 to-yellow-500/30 blur-xl opacity-90 animate-pulse-halo'
-                        : 'bg-amber-400/20 blur-lg opacity-40'
-                    }`}
-                  />
-
-                  {/* Sleek Vinyl Record Disc peeking out top-right when playing */}
-                  <div
-                    className={`absolute -top-6 -right-6 w-24 sm:w-28 h-24 sm:h-28 rounded-full pointer-events-none -z-20 transition-all duration-700 ease-out flex items-center justify-center ${
-                      isPlaying
-                        ? 'opacity-95 translate-x-3 -translate-y-2 scale-100 animate-vinyl'
-                        : 'opacity-0 scale-75 translate-x-0 translate-y-0'
-                    }`}
-                    style={{
-                      background: 'radial-gradient(circle, #2e2219 14%, #120e0b 22%, #1a1410 40%, #0d0a08 58%, #201914 78%, #090705 100%)',
-                      boxShadow: '0 10px 28px rgba(0,0,0,0.85), inset 0 0 10px rgba(0,0,0,0.95)',
-                    }}
-                  >
-                    {/* Vinyl Center Grooves & Metallic Gold Label */}
-                    <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-gradient-to-tr from-amber-600/40 via-amber-400/40 to-amber-700/40 border border-amber-400/50 flex items-center justify-center shadow-inner">
-                      <div className="w-2.5 h-2.5 rounded-full bg-[#0a0705] border border-amber-300/60" />
-                    </div>
-                  </div>
-                </>
+                <div
+                  className={`absolute -inset-2.5 rounded-[24px] pointer-events-none transition-all duration-700 -z-10 ${
+                    isPlaying
+                      ? 'bg-gradient-to-t from-amber-500/50 via-amber-400/40 to-yellow-500/30 blur-xl opacity-90 animate-pulse-halo'
+                      : 'bg-amber-400/20 blur-lg opacity-40'
+                  }`}
+                />
               )}
 
               {/* 2. Main Song Card with Animated Glowing Border */}
@@ -231,21 +210,6 @@ export default function CoverflowCarousel({
 
                     {/* Dark bottom gradient on artwork */}
                     <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#181310] via-[#181310]/60 to-transparent pointer-events-none" />
-
-                    {/* Active Song Playing Equalizer Indicator */}
-                    {isCenter && isPlaying && (
-                      <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/40 flex items-center gap-1.5 shadow-lg pointer-events-none z-20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
-                        <div className="flex items-end gap-[2px] h-3">
-                          <span className="w-[2px] h-2.5 bg-amber-400 rounded-full animate-pulse" />
-                          <span className="w-[2px] h-3.5 bg-amber-300 rounded-full animate-pulse [animation-delay:0.15s]" />
-                          <span className="w-[2px] h-2 bg-amber-400 rounded-full animate-pulse [animation-delay:0.3s]" />
-                        </div>
-                        <span className="text-[9px] font-bold tracking-wider text-amber-200 uppercase font-mono ml-0.5">
-                          PLAYING
-                        </span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Song Title and Artist (Centered at bottom) */}

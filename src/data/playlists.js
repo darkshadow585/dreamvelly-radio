@@ -14,6 +14,8 @@ export const PLAYLISTS = [
     badge: "Official Collection",
     description: "Curated romantic and soulful melodies by KS",
     icon: "✨",
+    bg: "/dreamevelly_bg.jpg",
+    theme: "dreamvelly",
     songs: [
       // --- Jubin Nautiyal Collection ---
       {
@@ -338,6 +340,8 @@ export const PLAYLISTS = [
     badge: "Acoustic & Indie Vibes",
     description: "Curated Indian indie, acoustic & soulful vibes by KS",
     icon: "🎸",
+    bg: "/indie_mist_bg.jpg",
+    theme: "indie",
     songs: [
       {
         id: "oafxkMv4xnc",
@@ -812,7 +816,8 @@ export const PLAYLISTS = [
     badge: "Acoustic Folk & Midnight Waves",
     description: "Timeless international indie folk, ambient acoustics & midnight coffee vibes curated by KS",
     icon: "☕",
-    bg: "/dreamevelly_bg.jpg",
+    bg: "/english_aurora_bg.jpg",
+    theme: "aurora",
     hasRainEffect: false,
     songs: [
       {
