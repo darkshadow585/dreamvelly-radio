@@ -8,8 +8,8 @@ export default function HeaderNav({ activePlaylist, onOpenPlaylistModal, onOpenA
       <div className="flex items-center gap-2.5 sm:gap-3 pointer-events-auto">
         <button
           onClick={onOpenAbout}
-          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-transform overflow-hidden group border border-amber-400/30 ring-1 ring-white/10"
-          title="About KS Music Lounge"
+          className="w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center shadow-lg hover:scale-105 active:scale-95 transition-all duration-300 overflow-hidden group border border-amber-400/40 ring-1 ring-white/20 hover:shadow-[0_0_18px_rgba(251,191,36,0.4)]"
+          title="About DREAMVELLY & KS Music Lounge"
         >
           <img
             src="/ks_logo.png"
@@ -23,7 +23,7 @@ export default function HeaderNav({ activePlaylist, onOpenPlaylistModal, onOpenA
       <div className="pointer-events-auto">
         <button
           onClick={onOpenPlaylistModal}
-          className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl bg-[#16120e]/80 hover:bg-[#16120e]/95 backdrop-blur-md border border-white/10 text-white shadow-sm transition-all duration-200 active:scale-95 group"
+          className="flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-2xl glass-dock text-white shadow-lg hover:border-amber-400/40 hover:shadow-[0_0_15px_rgba(251,191,36,0.2)] transition-all duration-200 active:scale-95 group"
         >
           {/* Animated audio bar indicator */}
           <div className="flex items-end gap-[2px] h-3 w-3 sm:h-3.5 sm:w-3.5">
@@ -32,7 +32,7 @@ export default function HeaderNav({ activePlaylist, onOpenPlaylistModal, onOpenA
             <span className="w-[2px] sm:w-[2.5px] bg-emerald-400 rounded-full animate-pulse [animation-delay:0.4s] h-3 sm:h-3.5"></span>
           </div>
 
-          <span className="text-xs sm:text-sm font-medium tracking-wide text-white/90">
+          <span className="text-xs sm:text-sm font-medium tracking-wide text-white/95">
             {activePlaylist.name}
           </span>
 

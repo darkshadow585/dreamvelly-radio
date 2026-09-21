@@ -1,4 +1,4 @@
-// Curated Playlist for DREAMEVELLY 2026
+// Curated Playlist for DREAMVELLY 2026
 // Curated by KS
 
 function ytThumb(videoId) {
@@ -7,9 +7,9 @@ function ytThumb(videoId) {
 
 export const PLAYLISTS = [
   {
-    id: "dreamevelly-2026",
-    name: "DREAMEVELLY 2026 ✨",
-    titleLine1: "DREAMEVELLY",
+    id: "dreamvelly-2026",
+    name: "DREAMVELLY 2026 ✨",
+    titleLine1: "DREAMVELLY",
     titleLine2: "2026",
     badge: "Official Collection",
     description: "Curated romantic and soulful melodies by KS",

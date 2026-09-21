@@ -59,7 +59,7 @@ export default function BackgroundScene() {
       {/* 1. Cinematic Background Image */}
       <img
         src="/dreamevelly_bg.jpg"
-        alt="DREAMEVELLY 2026 Ambience Scene"
+        alt="DREAMVELLY 2026 Ambience Scene"
         className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-out"
         style={{
           objectPosition: 'center 45%',

@@ -59,24 +59,31 @@ export default function BottomPlayerDock({
 
   return (
     <>
-      {/* Floating Bottom Player Bar */}
+      {/* Floating Bottom Player Bar with True Liquid Glassmorphism */}
       <div className="fixed bottom-5 sm:bottom-6 inset-x-0 z-40 flex justify-center pointer-events-none px-3 sm:px-4">
-        <div className="pointer-events-auto w-full max-w-[710px] h-[72px] sm:h-[76px] flex items-center justify-between px-3 sm:px-5 rounded-[20px] bg-[#140f0c]/85 backdrop-blur-2xl border border-white/[0.09] shadow-[0_16px_45px_rgba(0,0,0,0.85)] text-[#F4EFE8]">
+        <div className="relative pointer-events-auto w-full max-w-[720px] h-[74px] sm:h-[78px] flex items-center justify-between px-3 sm:px-5 rounded-[22px] glass-dock text-[#F4EFE8] overflow-hidden">
+          
+          {/* Specular Top Glare Hairline */}
+          <div className="absolute inset-x-8 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-transparent pointer-events-none" />
 
           {/* LEFT: Previous, Play/Pause, Next */}
-          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-1.5 flex-shrink-0 relative z-10">
             <button
               onClick={onPrev}
-              className="p-1.5 sm:p-2 text-[#F4EFE8]/60 hover:text-white hover:bg-white/[0.08] rounded-full transition active:scale-90"
+              className="p-1.5 sm:p-2 text-[#F4EFE8]/65 hover:text-white hover:bg-white/[0.10] rounded-full transition-all active:scale-90"
               title="Previous"
             >
               <SkipBack size={18} />
             </button>
 
-            {/* Circular Solid Off-White Play Button */}
+            {/* Circular Glowing Play/Pause Button */}
             <button
               onClick={onTogglePlay}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#F4EFE8] text-[#140e0a] flex items-center justify-center hover:scale-105 active:scale-95 transition-transform shadow-md"
+              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 ${
+                isPlaying
+                  ? 'bg-amber-300 text-[#140e0a] shadow-[0_0_20px_rgba(251,191,36,0.6),0_4px_14px_rgba(0,0,0,0.5)] ring-2 ring-amber-300/80'
+                  : 'bg-[#F4EFE8] text-[#140e0a] hover:bg-white shadow-[0_0_12px_rgba(255,255,255,0.25),0_4px_12px_rgba(0,0,0,0.4)]'
+              }`}
               title={isPlaying ? 'Pause (Space)' : 'Play (Space)'}
             >
               {isBuffering ? (
@@ -90,7 +97,7 @@ export default function BottomPlayerDock({
 
             <button
               onClick={onNext}
-              className="p-1.5 sm:p-2 text-[#F4EFE8]/60 hover:text-white hover:bg-white/[0.08] rounded-full transition active:scale-90"
+              className="p-1.5 sm:p-2 text-[#F4EFE8]/65 hover:text-white hover:bg-white/[0.10] rounded-full transition-all active:scale-90"
               title="Next"
             >
               <SkipForward size={18} />
@@ -98,9 +105,15 @@ export default function BottomPlayerDock({
           </div>
 
           {/* MIDDLE: Mini Cover + Title/Time + Artist + Progress */}
-          <div className="flex-1 min-w-0 mx-2.5 sm:mx-4 flex items-center gap-2.5 sm:gap-3">
-            {/* Mini Album Cover */}
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-[8px] overflow-hidden flex-shrink-0 bg-black/50 border border-white/10 shadow-sm">
+          <div className="flex-1 min-w-0 mx-2.5 sm:mx-4 flex items-center gap-2.5 sm:gap-3 relative z-10">
+            {/* Mini Album Cover with Play glow */}
+            <div
+              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-[10px] overflow-hidden flex-shrink-0 bg-black/50 border transition-all duration-300 shadow-sm ${
+                isPlaying
+                  ? 'border-amber-400/60 ring-1 ring-amber-400/30 shadow-[0_0_12px_rgba(251,191,36,0.35)]'
+                  : 'border-white/15'
+              }`}
+            >
               <img
                 src={currentSong?.cover}
                 alt={currentSong?.title}
@@ -118,38 +131,41 @@ export default function BottomPlayerDock({
                   {currentSong?.title}
                 </span>
 
-                <span className="text-[10.5px] sm:text-[11px] text-[#F4EFE8]/45 flex-shrink-0 font-mono tabular-nums">
+                <span className="text-[10px] sm:text-[11px] text-[#F4EFE8]/50 flex-shrink-0 font-mono tabular-nums">
                   {formatTime(currentTime)} / {formatTime(duration)}
                 </span>
               </div>
 
               {/* Row 2: Artist */}
-              <span className="text-[10.5px] sm:text-[11px] text-[#F4EFE8]/55 truncate leading-tight mt-0.5">
+              <span className="text-[10px] sm:text-[11px] text-[#F4EFE8]/60 truncate leading-tight mt-0.5 font-normal">
                 {currentSong?.artist}
               </span>
 
               {/* Row 3: Thin Sleek Scrubbable Progress Bar */}
               <div
                 onClick={handleProgressBarClick}
-                className="relative w-full h-[3px] bg-white/15 rounded-full cursor-pointer overflow-hidden group hover:h-[5px] transition-all mt-1.5"
+                className="relative w-full h-[3.5px] bg-white/15 rounded-full cursor-pointer group hover:h-[5.5px] transition-all duration-200 mt-1.5 flex items-center"
                 title="Seek"
               >
                 <div
-                  className="absolute top-0 left-0 bottom-0 bg-[#F4EFE8] group-hover:bg-amber-400 rounded-full transition-colors duration-150"
+                  className="h-full bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-200 rounded-full relative transition-all duration-100 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
                   style={{ width: `${progressPercent}%` }}
-                />
+                >
+                  {/* Glowing scrub thumb */}
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-white shadow-[0_0_6px_rgba(251,191,36,0.9)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
             </div>
           </div>
 
           {/* RIGHT: Repeat, Shuffle, Share, Volume */}
-          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+          <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0 relative z-10">
             <button
               onClick={onToggleRepeat}
-              className={`p-1.5 rounded-full transition ${
+              className={`p-1.5 rounded-full transition-all ${
                 repeatMode !== 'off'
-                  ? 'text-amber-400 bg-amber-400/15'
-                  : 'text-[#F4EFE8]/50 hover:text-white hover:bg-white/[0.08]'
+                  ? 'text-amber-300 bg-amber-400/20 border border-amber-400/35 shadow-[0_0_10px_rgba(251,191,36,0.25)]'
+                  : 'text-[#F4EFE8]/55 hover:text-white hover:bg-white/[0.10]'
               }`}
               title={`Repeat: ${repeatMode}`}
             >
@@ -158,10 +174,10 @@ export default function BottomPlayerDock({
 
             <button
               onClick={onToggleShuffle}
-              className={`p-1.5 rounded-full transition ${
+              className={`p-1.5 rounded-full transition-all ${
                 isShuffle
-                  ? 'text-amber-400 bg-amber-400/15'
-                  : 'text-[#F4EFE8]/50 hover:text-white hover:bg-white/[0.08]'
+                  ? 'text-amber-300 bg-amber-400/20 border border-amber-400/35 shadow-[0_0_10px_rgba(251,191,36,0.25)]'
+                  : 'text-[#F4EFE8]/55 hover:text-white hover:bg-white/[0.10]'
               }`}
               title="Shuffle"
             >
@@ -170,7 +186,7 @@ export default function BottomPlayerDock({
 
             <button
               onClick={onOpenShare}
-              className="p-1.5 text-[#F4EFE8]/50 hover:text-white hover:bg-white/[0.08] rounded-full transition"
+              className="p-1.5 text-[#F4EFE8]/55 hover:text-white hover:bg-white/[0.10] rounded-full transition-all"
               title="Share"
             >
               <Share2 size={15} />
@@ -184,14 +200,14 @@ export default function BottomPlayerDock({
             >
               <button
                 onClick={onToggleMute}
-                className="p-1.5 text-[#F4EFE8]/50 hover:text-white hover:bg-white/[0.08] rounded-full transition"
+                className="p-1.5 text-[#F4EFE8]/55 hover:text-white hover:bg-white/[0.10] rounded-full transition-all"
                 title="Mute / Unmute"
               >
                 {isMuted || volume === 0 ? <VolumeX size={15} /> : <Volume2 size={15} />}
               </button>
 
               {showVolumeSlider && (
-                <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-[#1c1511]/95 border border-white/15 rounded-xl shadow-2xl backdrop-blur-xl flex items-center gap-2">
+                <div className="absolute bottom-full right-0 mb-3 px-3.5 py-2.5 glass-dock rounded-2xl shadow-2xl backdrop-blur-3xl flex items-center gap-2.5 z-50">
                   <input
                     type="range"
                     min="0"
@@ -200,7 +216,7 @@ export default function BottomPlayerDock({
                     onChange={(e) => onChangeVolume(Number(e.target.value))}
                     className="w-20 h-1 accent-amber-400 cursor-pointer"
                   />
-                  <span className="text-[10px] text-white/60 w-7 font-mono tabular-nums">
+                  <span className="text-[10px] text-white/70 w-7 font-mono tabular-nums">
                     {isMuted ? '0' : volume}%
                   </span>
                 </div>
@@ -213,7 +229,7 @@ export default function BottomPlayerDock({
       {/* Discrete Fullscreen Toggle in corner */}
       <button
         onClick={onToggleFullscreen}
-        className="fixed bottom-5 right-4 sm:right-6 z-40 p-2 sm:p-2.5 rounded-full bg-black/40 hover:bg-black/65 backdrop-blur-xl border border-white/[0.10] text-[#F4EFE8]/50 hover:text-white shadow-lg transition-all active:scale-95"
+        className="fixed bottom-5 right-4 sm:right-6 z-40 p-2 sm:p-2.5 rounded-full glass-dock text-[#F4EFE8]/60 hover:text-white hover:border-amber-400/30 transition-all active:scale-95"
         title={isFullscreen ? 'Exit Fullscreen (F)' : 'Fullscreen (F)'}
       >
         {isFullscreen ? <Minimize size={15} /> : <Maximize size={15} />}

@@ -91,3 +91,46 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Vinyl & Glow Keyframes */
+@keyframes vinyl-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-vinyl {
+  animation: vinyl-spin 7s linear infinite;
+}
+
+@keyframes pulse-halo {
+  0%, 100% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.animate-pulse-halo {
+  animation: pulse-halo 3s ease-in-out infinite;
+}
+
+/* True Liquid Glassmorphism Dock */
+.glass-dock {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(22, 16, 12, 0.58) 35%, rgba(10, 7, 5, 0.72) 100%);
+  backdrop-filter: blur(32px) saturate(180%);
+  -webkit-backdrop-filter: blur(32px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-top-color: rgba(255, 255, 255, 0.28);
+  box-shadow: 
+    0 24px 60px rgba(0, 0, 0, 0.85),
+    0 4px 15px rgba(0, 0, 0, 0.4),
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
+    inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+}

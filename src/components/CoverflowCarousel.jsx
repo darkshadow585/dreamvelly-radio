@@ -12,7 +12,7 @@ export default function CoverflowCarousel({
   const [isDragging, setIsDragging] = useState(false);
 
   const totalSongs = songs.length;
-  const line1 = activePlaylist?.titleLine1 || 'DREAMEVELLY';
+  const line1 = activePlaylist?.titleLine1 || 'DREAMVELLY';
   const line2 = activePlaylist?.titleLine2 || '2026';
 
   // Keyboard navigation (Arrow keys)
@@ -163,62 +163,112 @@ export default function CoverflowCarousel({
                 zIndex,
                 opacity,
                 filter: `brightness(${brightness}) ${blurAmount > 0 ? `blur(${blurAmount}px)` : ''}`,
-                transition: 'transform 0.48s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.48s cubic-bezier(0.25, 1, 0.5, 1), filter 0.48s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.48s ease',
+                transition: 'transform 0.48s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.48s cubic-bezier(0.25, 1, 0.5, 1), filter 0.48s cubic-bezier(0.25, 1, 0.5, 1)',
               }}
-              className={`absolute rounded-[16px] overflow-hidden cursor-pointer group will-change-transform
-                ${isCenter
-                  ? 'ring-1 ring-white/20 shadow-[0_22px_55px_rgba(0,0,0,0.85),0_0_35px_rgba(0,0,0,0.45)]'
-                  : absOffset === 1
-                  ? 'shadow-[0_14px_35px_rgba(0,0,0,0.7)]'
-                  : 'shadow-[0_10px_25px_rgba(0,0,0,0.6)]'
-                }
-              `}
+              className="absolute cursor-pointer group will-change-transform select-none"
             >
-              {/* Card Container with dark warm glassmorphism */}
-              <div className="w-full h-full bg-[#181310]/85 backdrop-blur-xl border border-white/[0.10] rounded-[16px] overflow-hidden flex flex-col justify-between">
-                {/* Album Artwork */}
-                <div className="relative w-full flex-1 overflow-hidden bg-black/50">
-                  <img
-                    src={song.cover}
-                    alt={song.title}
-                    className="w-full h-full object-cover select-none pointer-events-none"
-                    loading="eager"
-                    draggable="false"
+              {/* 1. Ambient Golden Halo / Glow behind Center Card */}
+              {isCenter && (
+                <>
+                  {/* Outer atmospheric aura */}
+                  <div
+                    className={`absolute -inset-2.5 rounded-[24px] pointer-events-none transition-all duration-700 -z-10 ${
+                      isPlaying
+                        ? 'bg-gradient-to-t from-amber-500/50 via-amber-400/40 to-yellow-500/30 blur-xl opacity-90 animate-pulse-halo'
+                        : 'bg-amber-400/20 blur-lg opacity-40'
+                    }`}
                   />
 
-                  {/* Dark bottom gradient on artwork */}
-                  <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#181310] via-[#181310]/60 to-transparent pointer-events-none" />
-
-                  {/* Active Song Playing Equalizer Indicator */}
-                  {isCenter && isPlaying && (
-                    <div className="absolute top-2.5 right-2.5 px-2 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center gap-[2.5px] shadow-md pointer-events-none">
-                      <span className="w-[2px] h-2 bg-emerald-400 rounded-full animate-pulse" />
-                      <span className="w-[2px] h-3.5 bg-emerald-400 rounded-full animate-pulse [animation-delay:0.15s]" />
-                      <span className="w-[2px] h-2 bg-emerald-400 rounded-full animate-pulse [animation-delay:0.3s]" />
+                  {/* Sleek Vinyl Record Disc peeking out top-right when playing */}
+                  <div
+                    className={`absolute -top-6 -right-6 w-24 sm:w-28 h-24 sm:h-28 rounded-full pointer-events-none -z-20 transition-all duration-700 ease-out flex items-center justify-center ${
+                      isPlaying
+                        ? 'opacity-95 translate-x-3 -translate-y-2 scale-100 animate-vinyl'
+                        : 'opacity-0 scale-75 translate-x-0 translate-y-0'
+                    }`}
+                    style={{
+                      background: 'radial-gradient(circle, #2e2219 14%, #120e0b 22%, #1a1410 40%, #0d0a08 58%, #201914 78%, #090705 100%)',
+                      boxShadow: '0 10px 28px rgba(0,0,0,0.85), inset 0 0 10px rgba(0,0,0,0.95)',
+                    }}
+                  >
+                    {/* Vinyl Center Grooves & Metallic Gold Label */}
+                    <div className="w-8 sm:w-9 h-8 sm:h-9 rounded-full bg-gradient-to-tr from-amber-600/40 via-amber-400/40 to-amber-700/40 border border-amber-400/50 flex items-center justify-center shadow-inner">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#0a0705] border border-amber-300/60" />
                     </div>
-                  )}
-                </div>
+                  </div>
+                </>
+              )}
 
-                {/* Song Title and Artist (Centered at bottom) */}
-                <div className="px-2.5 py-2 sm:py-2.5 text-center bg-[#181310]/95 flex flex-col justify-center min-h-[50px] sm:min-h-[56px]">
-                  <h3
-                    className={`font-semibold truncate leading-tight tracking-wide ${
-                      isCenter
-                        ? 'text-[12px] sm:text-[13.5px] text-[#F4EFE8]'
-                        : 'text-[10px] sm:text-[11.5px] text-[#F4EFE8]/85'
-                    }`}
-                  >
-                    {song.title}
-                  </h3>
-                  <p
-                    className={`truncate mt-0.5 leading-tight ${
-                      isCenter
-                        ? 'text-[10px] sm:text-[11px] text-[#F4EFE8]/55 font-normal'
-                        : 'text-[9px] sm:text-[10px] text-[#F4EFE8]/40 font-normal'
-                    }`}
-                  >
-                    {song.artist}
-                  </p>
+              {/* 2. Main Song Card with Animated Glowing Border */}
+              <div
+                className={`relative w-full h-full rounded-[16px] overflow-hidden transition-all duration-300 flex flex-col justify-between ${
+                  isCenter
+                    ? isPlaying
+                      ? 'ring-2 ring-amber-400/90 shadow-[0_0_25px_rgba(251,191,36,0.6),0_0_60px_rgba(245,158,11,0.3),0_24px_60px_rgba(0,0,0,0.95)]'
+                      : 'ring-1 ring-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.25),0_20px_50px_rgba(0,0,0,0.85)]'
+                    : absOffset === 1
+                    ? 'ring-1 ring-white/10 shadow-[0_14px_35px_rgba(0,0,0,0.7)]'
+                    : 'shadow-[0_10px_25px_rgba(0,0,0,0.6)]'
+                }`}
+              >
+                {/* Internal Container with Glass Tint */}
+                <div className="w-full h-full bg-[#181310]/90 backdrop-blur-xl border border-white/[0.10] rounded-[16px] overflow-hidden flex flex-col justify-between relative">
+                  
+                  {/* Shimmering Top Specular Glass Sheen on Center Card */}
+                  {isCenter && (
+                    <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.04] to-amber-200/[0.08] pointer-events-none z-10" />
+                  )}
+
+                  {/* Album Artwork */}
+                  <div className="relative w-full flex-1 overflow-hidden bg-black/50">
+                    <img
+                      src={song.cover}
+                      alt={song.title}
+                      className="w-full h-full object-cover select-none pointer-events-none"
+                      loading="eager"
+                      draggable="false"
+                    />
+
+                    {/* Dark bottom gradient on artwork */}
+                    <div className="absolute inset-x-0 bottom-0 h-12 bg-gradient-to-t from-[#181310] via-[#181310]/60 to-transparent pointer-events-none" />
+
+                    {/* Active Song Playing Equalizer Indicator */}
+                    {isCenter && isPlaying && (
+                      <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-amber-400/40 flex items-center gap-1.5 shadow-lg pointer-events-none z-20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                        <div className="flex items-end gap-[2px] h-3">
+                          <span className="w-[2px] h-2.5 bg-amber-400 rounded-full animate-pulse" />
+                          <span className="w-[2px] h-3.5 bg-amber-300 rounded-full animate-pulse [animation-delay:0.15s]" />
+                          <span className="w-[2px] h-2 bg-amber-400 rounded-full animate-pulse [animation-delay:0.3s]" />
+                        </div>
+                        <span className="text-[9px] font-bold tracking-wider text-amber-200 uppercase font-mono ml-0.5">
+                          PLAYING
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Song Title and Artist (Centered at bottom) */}
+                  <div className="px-2.5 py-2 sm:py-2.5 text-center bg-[#181310]/95 flex flex-col justify-center min-h-[50px] sm:min-h-[56px] relative z-10">
+                    <h3
+                      className={`font-semibold truncate leading-tight tracking-wide ${
+                        isCenter
+                          ? 'text-[12px] sm:text-[13.5px] text-[#F4EFE8]'
+                          : 'text-[10px] sm:text-[11.5px] text-[#F4EFE8]/85'
+                      }`}
+                    >
+                      {song.title}
+                    </h3>
+                    <p
+                      className={`truncate mt-0.5 leading-tight ${
+                        isCenter
+                          ? 'text-[10px] sm:text-[11px] text-[#F4EFE8]/60 font-normal'
+                          : 'text-[9px] sm:text-[10px] text-[#F4EFE8]/40 font-normal'
+                      }`}
+                    >
+                      {song.artist}
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
