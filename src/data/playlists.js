@@ -627,6 +627,150 @@ export const PLAYLISTS = [
     hasRainEffect: true,
     songs: [
       {
+        id: "fXRvluHnjxE",
+        title: "Mast Magan",
+        artist: "Arijit Singh & Chinmayi Sripada",
+        movie: "2 States",
+        year: "2026",
+        duration: "4:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "FGTv9-oQhIg",
+        title: "Thodi Der",
+        artist: "Farhan Saeed & Shreya Ghoshal",
+        movie: "Half Girlfriend",
+        year: "2026",
+        duration: "4:56",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "BNfAf4To73c",
+        title: "Baarish",
+        artist: "Ash King & Shashaa Tirupati",
+        movie: "Half Girlfriend",
+        year: "2026",
+        duration: "4:36",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "BFlM5jKBuLs",
+        title: "Chalta Rahe (Milon Ka Yaarana)",
+        artist: "Ankit Tiwari",
+        movie: "Single",
+        year: "2026",
+        duration: "3:30",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "V1oczq_8L0E",
+        title: "Ishq Mubarak",
+        artist: "Arijit Singh",
+        movie: "Tum Bin 2",
+        year: "2026",
+        duration: "4:56",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "RLzC55ai0eo",
+        title: "Heeriye",
+        artist: "Jasleen Royal & Arijit Singh",
+        movie: "Single",
+        year: "2026",
+        duration: "3:18",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "hdNg1TAtAHg",
+        title: "Fitoor",
+        artist: "Arijit Singh & Neeti Mohan",
+        movie: "Shamshera",
+        year: "2026",
+        duration: "5:08",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "bKt904bRyxU",
+        title: "Raanjhana",
+        artist: "Arijit Singh & Asad Khan",
+        movie: "Single",
+        year: "2026",
+        duration: "4:12",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "QkPxhZO-0hc",
+        title: "Heer Raanjhana",
+        artist: "Arijit Singh & Shreya Ghoshal",
+        movie: "Bachchhan Paandey",
+        year: "2026",
+        duration: "4:02",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "eN6AYHAT8UM",
+        title: "Yaad Piya Ki Aane Lagi",
+        artist: "Neha Kakkar",
+        movie: "T-Series Single",
+        year: "2026",
+        duration: "4:15",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "wHDh_ruJ8Ug",
+        title: "Tumhe Apna Banane Ka",
+        artist: "Armaan Malik & Neeti Mohan",
+        movie: "Hate Story 3",
+        year: "2026",
+        duration: "5:10",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "9T-Zbxg9X_4",
+        title: "Dooron Dooron (Live)",
+        artist: "Paresh Pahuja",
+        movie: "Voice Notes",
+        year: "2026",
+        duration: "3:45",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "ogBQ3VymYbk",
+        title: "Kabhi Kabhi",
+        artist: "AUR",
+        movie: "AUR Single",
+        year: "2026",
+        duration: "3:30",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "QxddU3sjVRY",
+        title: "Shikayat",
+        artist: "AUR",
+        movie: "AUR Single",
+        year: "2026",
+        duration: "4:12",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "ko7YMs9Q3KU",
+        title: "Long Time No See",
+        artist: "Taimour Baig ft. AUR",
+        movie: "Single",
+        year: "2026",
+        duration: "3:40",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
+        id: "-qLQ10H9gfA",
+        title: "Kya Chahiye",
+        artist: "AUR",
+        movie: "AUR Single",
+        year: "2026",
+        duration: "3:25",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
         id: "blRe2wQP-_U",
         title: "Aise Kyun",
         artist: "Anurag Saikia, Rekha Bhardwaj",

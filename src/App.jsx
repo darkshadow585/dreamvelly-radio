@@ -16,7 +16,7 @@ export default function App() {
     let pId = params.get('playlist');
     if (pId === 'dreamevelly-2026') pId = 'dreamvelly-2026';
     return {
-      playlistId: pId || 'dreamvelly-2026',
+      playlistId: pId || 'barish',
       songId: params.get('song') || null,
       openModal: params.get('modal') || null,
     };
@@ -24,7 +24,7 @@ export default function App() {
 
   const [activePlaylistId, setActivePlaylistId] = useState(() => {
     const exists = PLAYLISTS.some((p) => p.id === initialParams.playlistId);
-    return exists ? initialParams.playlistId : 'dreamvelly-2026';
+    return exists ? initialParams.playlistId : 'barish';
   });
 
   const activePlaylist = useMemo(() => {
