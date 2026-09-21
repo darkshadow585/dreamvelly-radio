@@ -627,6 +627,15 @@ export const PLAYLISTS = [
     hasRainEffect: true,
     songs: [
       {
+        id: "YIzjWBa0-eI",
+        title: "Kabhi Jo Badal Barse",
+        artist: "Arijit Singh",
+        movie: "Jackpot",
+        year: "2013",
+        duration: "4:14",
+        get cover() { return ytThumb(this.id); }
+      },
+      {
         id: "fXRvluHnjxE",
         title: "Mast Magan",
         artist: "Arijit Singh & Chinmayi Sripada",

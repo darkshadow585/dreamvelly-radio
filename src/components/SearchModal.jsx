@@ -167,20 +167,30 @@ export default function SearchModal({
     debounceTimerRef.current = setTimeout(async () => {
       setIsSearchingYT(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        const res = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`, {
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
         if (res.ok) {
           const data = await res.json();
           if (data && Array.isArray(data.items)) {
             setYtResults(data.items);
+          } else {
+            setYtResults([]);
           }
+        } else {
+          setYtResults([]);
         }
       } catch (e) {
-        // Fallback or offline
-        console.log('YouTube search API not available, relying on catalogue and direct links');
+        setYtResults([]);
+        console.log('YouTube search API error:', e.message);
       } finally {
         setIsSearchingYT(false);
       }
-    }, 450);
+    }, 400);
 
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
@@ -461,8 +471,17 @@ export default function SearchModal({
             </div>
           )}
 
-          {/* Empty state when no matches */}
-          {localResults.length === 0 && ytResults.length === 0 && !detectedYtTrack && (
+          {/* Loading YouTube results indicator */}
+          {isSearchingYT && localResults.length === 0 && (
+            <div className="py-12 text-center text-white/60 space-y-3">
+              <Loader2 size={32} className="mx-auto text-amber-400 animate-spin" />
+              <p className="text-sm font-medium">Searching YouTube for "{query}"...</p>
+              <p className="text-xs text-white/40">Fetching live YouTube tracks & audio stream...</p>
+            </div>
+          )}
+
+          {/* Empty state when no matches and not loading */}
+          {!isSearchingYT && localResults.length === 0 && ytResults.length === 0 && !detectedYtTrack && query.trim() && (
             <div className="py-12 text-center text-white/50 space-y-2">
               <Music2 size={32} className="mx-auto text-amber-400/40" />
               <p className="text-sm">No songs found for "{query}"</p>
