@@ -98,36 +98,23 @@ export default function BackgroundScene({ activePlaylist }) {
     };
 
     // ==========================================
-    // 2. DREAMVELLY 2026 (GOLDEN FIREFLIES / JUGNOO + SHOOTING STARS)
+    // 2. DREAMVELLY 2026 (METEOR SHOWER / ULKA PIND)
     // ==========================================
-    const fireflies = Array.from({ length: 42 }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      radius: Math.random() * 2.2 + 1.2,
-      vx: (Math.random() - 0.48) * 0.4,
-      vy: -Math.random() * 0.45 - 0.15,
-      pulse: Math.random() * Math.PI * 2,
-      pulseSpeed: Math.random() * 0.03 + 0.015,
-      glowRadius: Math.random() * 12 + 10,
-    }));
-
-    let shootingStars = [];
-    let shootingStarTimer = 180 + Math.random() * 300;
+    let meteors = [];
+    let meteorSpawnTimer = 25 + Math.random() * 35;
 
     // ==========================================
-    // 3. AURORA (ICELAND NORTHERN LIGHTS + SNOWFALL)
+    // 3. AURORA (ICELAND NORTHERN LIGHTS + CLEAN GENTLE SNOWFALL)
     // ==========================================
-    const snowflakes = Array.from({ length: 75 }, () => ({
+    const snowflakes = Array.from({ length: 65 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      radius: Math.random() * 2.2 + 0.8,
-      speed: Math.random() * 1.2 + 0.6,
+      radius: Math.random() * 2.0 + 0.8,
+      speed: Math.random() * 1.1 + 0.5,
       sway: Math.random() * Math.PI * 2,
       swaySpeed: Math.random() * 0.02 + 0.01,
-      opacity: Math.random() * 0.6 + 0.25,
+      opacity: Math.random() * 0.55 + 0.25,
     }));
-
-    let auroraTime = 0;
 
     // ==========================================
     // 4. INDIE (MISTY FOREST LAKE + CABIN SPARKS)
@@ -273,42 +260,11 @@ export default function BackgroundScene({ activePlaylist }) {
         }
 
       } else if (theme === 'aurora') {
-        // --- 2. AURORA BOREALIS FLUID RIBBONS & SNOWFALL ---
-        auroraTime += 0.015;
-
-        // Render fluid undulating aurora curtains in upper sky
-        const bands = [
-          { baseY: canvas.height * 0.22, color1: 'rgba(52, 232, 172, 0.18)', color2: 'rgba(168, 85, 247, 0.08)', freq: 0.003, speed: 1.0, height: 130 },
-          { baseY: canvas.height * 0.29, color1: 'rgba(56, 189, 248, 0.22)', color2: 'rgba(52, 232, 172, 0.12)', freq: 0.004, speed: 1.3, height: 160 },
-          { baseY: canvas.height * 0.36, color1: 'rgba(168, 85, 247, 0.15)', color2: 'rgba(45, 212, 191, 0.06)', freq: 0.0025, speed: 0.8, height: 110 },
-        ];
-
-        bands.forEach((b) => {
-          ctx.beginPath();
-          ctx.moveTo(0, canvas.height);
-          for (let x = 0; x <= canvas.width; x += 15) {
-            const wave1 = Math.sin(x * b.freq + auroraTime * b.speed) * 35;
-            const wave2 = Math.cos(x * (b.freq * 1.8) - auroraTime * (b.speed * 0.7)) * 20;
-            const y = b.baseY + wave1 + wave2;
-            if (x === 0) ctx.lineTo(x, y);
-            else ctx.lineTo(x, y);
-          }
-          ctx.lineTo(canvas.width, canvas.height);
-          ctx.closePath();
-
-          const grad = ctx.createLinearGradient(0, b.baseY - 60, 0, b.baseY + b.height);
-          grad.addColorStop(0, b.color2);
-          grad.addColorStop(0.5, b.color1);
-          grad.addColorStop(1, 'transparent');
-          ctx.fillStyle = grad;
-          ctx.fill();
-        });
-
-        // Gentle falling snowflakes
+        // --- 2. ICELAND WHITE SNOW & CLEAN GENTLE SNOWFALL (NO LIGHT MOVEMENT) ---
         snowflakes.forEach((s) => {
           s.sway += s.swaySpeed;
           s.y += s.speed;
-          s.x += Math.sin(s.sway) * 0.6;
+          s.x += Math.sin(s.sway) * 0.55;
 
           if (s.y > canvas.height + 10) {
             s.y = -10;
@@ -318,8 +274,8 @@ export default function BackgroundScene({ activePlaylist }) {
           ctx.beginPath();
           ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
           ctx.fillStyle = `rgba(230, 245, 255, ${s.opacity})`;
-          ctx.shadowBlur = 4;
-          ctx.shadowColor = 'rgba(120, 220, 255, 0.5)';
+          ctx.shadowBlur = 3;
+          ctx.shadowColor = 'rgba(160, 220, 255, 0.4)';
           ctx.fill();
           ctx.shadowBlur = 0;
         });
@@ -370,76 +326,72 @@ export default function BackgroundScene({ activePlaylist }) {
         });
 
       } else {
-        // --- 4. DREAMVELLY 2026: BIOLUMINESCENT FIREFLIES + SHOOTING STARS ---
-        // Organic pulsing fireflies (Jugnoo)
-        fireflies.forEach((p) => {
-          p.pulse += p.pulseSpeed;
-          const currentBrightness = 0.4 + 0.6 * Math.sin(p.pulse);
-
-          // Soft radial glow halo
-          const glow = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.glowRadius);
-          glow.addColorStop(0, `rgba(255, 225, 120, ${0.45 * currentBrightness})`);
-          glow.addColorStop(0.4, `rgba(255, 180, 70, ${0.15 * currentBrightness})`);
-          glow.addColorStop(1, 'transparent');
-          ctx.fillStyle = glow;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.glowRadius, 0, Math.PI * 2);
-          ctx.fill();
-
-          // Intense core dot
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(255, 245, 190, ${0.85 * currentBrightness + 0.15})`;
-          ctx.fill();
-
-          p.x += p.vx + Math.sin(p.pulse) * 0.25;
-          p.y += p.vy;
-
-          if (p.y < -20) {
-            p.y = canvas.height + 20;
-            p.x = Math.random() * canvas.width;
+        // --- 4. DREAMVELLY 2026: GRACEFUL METEOR SHOWER (NO JUGNOO) ---
+        meteorSpawnTimer -= 1;
+        if (meteorSpawnTimer <= 0) {
+          // Spawn 1 or 2 meteors
+          const count = Math.random() < 0.35 ? 2 : 1;
+          for (let c = 0; c < count; c++) {
+            const angle = Math.PI * 0.22 + (Math.random() - 0.5) * 0.08;
+            const speed = Math.random() * 6 + 10;
+            const length = Math.random() * 110 + 70;
+            meteors.push({
+              x: Math.random() * (canvas.width * 1.1) - canvas.width * 0.05,
+              y: Math.random() * (canvas.height * 0.28) - 20,
+              vx: -Math.cos(angle) * speed,
+              vy: Math.sin(angle) * speed,
+              length: length,
+              opacity: Math.random() * 0.35 + 0.65,
+              decay: Math.random() * 0.016 + 0.012,
+              width: Math.random() * 1.4 + 1.1,
+              isGolden: Math.random() > 0.4,
+            });
           }
-          if (p.x < -20) p.x = canvas.width + 20;
-          if (p.x > canvas.width + 20) p.x = -20;
-        });
-
-        // Shooting Stars (Toot-te Taare)
-        shootingStarTimer -= 1;
-        if (shootingStarTimer <= 0) {
-          shootingStars.push({
-            x: Math.random() * (canvas.width * 0.8) + canvas.width * 0.1,
-            y: Math.random() * (canvas.height * 0.28),
-            len: Math.random() * 90 + 70,
-            speed: Math.random() * 12 + 14,
-            angle: Math.PI / 4 + (Math.random() - 0.5) * 0.2,
-            opacity: 1,
-          });
-          shootingStarTimer = 220 + Math.random() * 320; // Every 4-9 sec
+          // Steady, soothing meteor shower interval: ~0.8 to 1.6 seconds
+          meteorSpawnTimer = 45 + Math.random() * 50;
         }
 
-        for (let i = shootingStars.length - 1; i >= 0; i--) {
-          const star = shootingStars[i];
-          const tailX = star.x - Math.cos(star.angle) * star.len;
-          const tailY = star.y - Math.sin(star.angle) * star.len;
+        for (let i = meteors.length - 1; i >= 0; i--) {
+          const m = meteors[i];
+          const tailX = m.x - (m.vx / Math.hypot(m.vx, m.vy)) * m.length;
+          const tailY = m.y - (m.vy / Math.hypot(m.vx, m.vy)) * m.length;
 
-          const sGrad = ctx.createLinearGradient(star.x, star.y, tailX, tailY);
-          sGrad.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`);
-          sGrad.addColorStop(0.3, `rgba(255, 220, 140, ${star.opacity * 0.6})`);
-          sGrad.addColorStop(1, 'transparent');
+          const grad = ctx.createLinearGradient(m.x, m.y, tailX, tailY);
+          if (m.isGolden) {
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.opacity})`);
+            grad.addColorStop(0.18, `rgba(255, 220, 140, ${m.opacity * 0.85})`);
+            grad.addColorStop(0.65, `rgba(245, 150, 50, ${m.opacity * 0.35})`);
+            grad.addColorStop(1, 'transparent');
+          } else {
+            grad.addColorStop(0, `rgba(255, 255, 255, ${m.opacity})`);
+            grad.addColorStop(0.2, `rgba(180, 230, 255, ${m.opacity * 0.85})`);
+            grad.addColorStop(0.7, `rgba(110, 175, 255, ${m.opacity * 0.3})`);
+            grad.addColorStop(1, 'transparent');
+          }
 
-          ctx.lineWidth = 2;
-          ctx.strokeStyle = sGrad;
           ctx.beginPath();
-          ctx.moveTo(star.x, star.y);
+          ctx.moveTo(m.x, m.y);
           ctx.lineTo(tailX, tailY);
+          ctx.lineWidth = m.width;
+          ctx.strokeStyle = grad;
+          ctx.lineCap = 'round';
           ctx.stroke();
 
-          star.x += Math.cos(star.angle) * star.speed;
-          star.y += Math.sin(star.angle) * star.speed;
-          star.opacity -= 0.022;
+          // Luminous meteor head glow
+          ctx.beginPath();
+          ctx.arc(m.x, m.y, m.width * 1.1, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${m.opacity})`;
+          ctx.shadowBlur = 6;
+          ctx.shadowColor = m.isGolden ? 'rgba(255, 200, 100, 0.75)' : 'rgba(150, 220, 255, 0.75)';
+          ctx.fill();
+          ctx.shadowBlur = 0;
 
-          if (star.opacity <= 0) {
-            shootingStars.splice(i, 1);
+          m.x += m.vx;
+          m.y += m.vy;
+          m.opacity -= m.decay;
+
+          if (m.opacity <= 0 || m.y > canvas.height * 0.65 || m.x < -120) {
+            meteors.splice(i, 1);
           }
         }
       }
