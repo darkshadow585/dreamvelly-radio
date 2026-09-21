@@ -1,0 +1,93 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Teko';
+  src: url('/Teko-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'TekoHindi';
+  src: url('/Teko-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  body {
+    background-color: #0a0705;
+    color: #F4EFE8;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+}
+
+/* Exact Card Sizing from Deluxe Salon Songs */
+.track-card-size {
+  width: 170px;
+}
+@media (min-width: 450px) {
+  .track-card-size {
+    width: 190px;
+  }
+}
+@media (min-width: 640px) {
+  .track-card-size {
+    width: 195px;
+  }
+}
+@media (min-width: 768px) {
+  .track-card-size {
+    width: 190px;
+  }
+}
+@media (min-width: 1024px) {
+  .track-card-size {
+    width: 215px;
+  }
+}
+
+/* Exact 3D Perspective Card Transforms */
+.track-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) translateX(var(--tx-m)) rotateY(var(--ry-m)) scale(var(--sc-m));
+  opacity: var(--op-m);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+
+@media (min-width: 768px) {
+  .track-card {
+    transform: translate(-50%, -50%) translateX(var(--tx-d)) rotateY(var(--ry-d)) scale(var(--sc-d));
+    opacity: var(--op-d);
+  }
+}
+
+/* Hero Heading */
+.hero-heading {
+  font-family: 'TekoHindi', 'Teko', sans-serif;
+  letter-spacing: -0.01em;
+  text-shadow: 
+    0 2px 30px rgba(0, 0, 0, 0.5), 
+    0 4px 60px rgba(0, 0, 0, 0.3), 
+    0 0 100px rgba(0, 0, 0, 0.2);
+}
+
+/* No Scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
