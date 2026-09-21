@@ -1,5 +1,5 @@
-import React from 'react';
-import { X, Sparkles, Music, Disc3 } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, Sparkles, Music, Disc3, Search } from 'lucide-react';
 import { PLAYLISTS } from '../data/playlists';
 
 export default function PlaylistModal({
@@ -9,10 +9,19 @@ export default function PlaylistModal({
   onSelectPlaylist,
   currentSongId,
   onSelectSongById,
+  activePlaylistSongs,
 }) {
+  const [filterText, setFilterText] = useState('');
+
   if (!isOpen) return null;
 
   const currentPlaylist = PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
+  const playlistSongs = activePlaylistSongs || currentPlaylist.songs;
+  const filteredSongs = playlistSongs.filter((s) => {
+    if (!filterText.trim()) return true;
+    const q = filterText.toLowerCase();
+    return s.title?.toLowerCase().includes(q) || s.artist?.toLowerCase().includes(q) || s.movie?.toLowerCase().includes(q);
+  });
 
   return (
     <div
@@ -73,14 +82,36 @@ export default function PlaylistModal({
           })}
         </div>
 
+        {/* Quick Filter Input */}
+        <div className="px-3.5 pt-2.5 pb-1 bg-black/20">
+          <div className="relative flex items-center">
+            <Search size={14} className="absolute left-3 text-amber-300/60 pointer-events-none" />
+            <input
+              type="text"
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              placeholder={`Filter ${currentPlaylist.name} tracks...`}
+              className="w-full pl-8 pr-8 py-1.5 bg-black/40 border border-white/10 focus:border-amber-400/40 rounded-xl text-xs text-white placeholder-white/35 outline-none transition"
+            />
+            {filterText && (
+              <button
+                onClick={() => setFilterText('')}
+                className="absolute right-2.5 text-white/40 hover:text-white"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Songs List for Active Playlist */}
         <div className="flex-1 overflow-y-auto p-3.5 space-y-1.5 no-scrollbar">
           <div className="px-2 py-1 text-[11px] uppercase tracking-wider text-amber-300/60 font-semibold flex items-center justify-between">
             <span>{currentPlaylist.badge || currentPlaylist.name}</span>
-            <span className="font-mono">{currentPlaylist.songs.length} Tracks</span>
+            <span className="font-mono">{filteredSongs.length} Tracks</span>
           </div>
 
-          {currentPlaylist.songs.map((song, index) => {
+          {filteredSongs.map((song, index) => {
             const isCurrent = song.id === currentSongId;
             return (
               <div

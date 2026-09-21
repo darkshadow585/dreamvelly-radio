@@ -6,6 +6,8 @@ import BottomPlayerDock from './components/BottomPlayerDock';
 import PlaylistModal from './components/PlaylistModal';
 import ShareModal from './components/ShareModal';
 import AboutModal from './components/AboutModal';
+import SearchModal from './components/SearchModal';
+import ScreenOffOverlay from './components/ScreenOffOverlay';
 import { PLAYLISTS } from './data/playlists';
 import { useYouTubeRadio } from './hooks/useYouTubeRadio';
 
@@ -14,7 +16,7 @@ export default function App() {
   const initialParams = useMemo(() => {
     const params = new URLSearchParams(window.location.search);
     let pId = params.get('playlist');
-    if (pId === 'dreamevelly-2026') pId = 'dreamvelly-2026';
+    if (pId === 'dreamevelly-2026' || pId === 'dreamvelly-2026') pId = 'dreamvalley-2026';
     return {
       playlistId: pId || 'barish',
       songId: params.get('song') || null,
@@ -22,14 +24,27 @@ export default function App() {
     };
   }, []);
 
+  // Playlist management with dynamic custom tracks support
+  const [customPlaylistSongs, setCustomPlaylistSongs] = useState(() => {
+    const map = {};
+    PLAYLISTS.forEach((p) => {
+      map[p.id] = [...p.songs];
+    });
+    return map;
+  });
+
   const [activePlaylistId, setActivePlaylistId] = useState(() => {
     const exists = PLAYLISTS.some((p) => p.id === initialParams.playlistId);
     return exists ? initialParams.playlistId : 'barish';
   });
 
   const activePlaylist = useMemo(() => {
-    return PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
-  }, [activePlaylistId]);
+    const base = PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
+    return {
+      ...base,
+      songs: customPlaylistSongs[activePlaylistId] || base.songs,
+    };
+  }, [activePlaylistId, customPlaylistSongs]);
 
   const [currentSongIndex, setCurrentSongIndex] = useState(() => {
     if (initialParams.songId) {
@@ -45,16 +60,17 @@ export default function App() {
   const [isShuffle, setIsShuffle] = useState(false);
   const [repeatMode, setRepeatMode] = useState('off'); // 'off', 'all', 'one'
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isScreenOffActive, setIsScreenOffActive] = useState(false);
 
   // Modals
   const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(() => initialParams.openModal === 'playlist');
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Handle song ending & auto next
   const handleSongEnd = useCallback(() => {
     if (repeatMode === 'one') {
-      // Re-trigger current song
       radio.seekTo(0);
       radio.togglePlay();
       return;
@@ -67,19 +83,6 @@ export default function App() {
       setCurrentSongIndex((prev) => (prev + 1) % activePlaylist.songs.length);
     }
   }, [repeatMode, isShuffle, activePlaylist.songs.length]);
-
-  // YouTube audio engine
-  const radio = useYouTubeRadio({
-    currentSongId: currentSong?.id,
-    onSongEnd: handleSongEnd,
-  });
-
-  // Sync URL when song or playlist changes
-  useEffect(() => {
-    if (!currentSong) return;
-    const newUrl = `?playlist=${activePlaylistId}&song=${currentSong.id}`;
-    window.history.replaceState(null, '', newUrl);
-  }, [activePlaylistId, currentSong?.id]);
 
   // Controls
   const handlePrev = useCallback(() => {
@@ -94,6 +97,22 @@ export default function App() {
       setCurrentSongIndex((prev) => (prev + 1) % activePlaylist.songs.length);
     }
   }, [isShuffle, activePlaylist.songs.length]);
+
+  // YouTube audio engine with MediaSession & background keep-alive
+  const radio = useYouTubeRadio({
+    currentSongId: currentSong?.id,
+    currentSong,
+    onSongEnd: handleSongEnd,
+    onNext: handleNext,
+    onPrev: handlePrev,
+  });
+
+  // Sync URL when song or playlist changes
+  useEffect(() => {
+    if (!currentSong) return;
+    const newUrl = `?playlist=${activePlaylistId}&song=${currentSong.id}`;
+    window.history.replaceState(null, '', newUrl);
+  }, [activePlaylistId, currentSong?.id]);
 
   const handleSelectSong = useCallback((index) => {
     setCurrentSongIndex(index);
@@ -110,6 +129,47 @@ export default function App() {
       setCurrentSongIndex(idx);
     }
   }, [activePlaylist.songs]);
+
+  // Fast Play handler for Search & Direct YouTube Play
+  const handlePlayTrack = useCallback((track) => {
+    if (!track || !track.id) return;
+
+    const targetPlaylistId = activePlaylistId;
+    const currentSongs = customPlaylistSongs[targetPlaylistId] || [];
+
+    const existingIdx = currentSongs.findIndex((s) => s.id === track.id);
+    if (existingIdx !== -1) {
+      // Song exists in active playlist: select it & play fast
+      setCurrentSongIndex(existingIdx);
+      radio.playTrack(track.id);
+    } else {
+      // New track from YouTube search or direct link
+      const newSong = {
+        id: track.id,
+        title: track.title || `Track ${track.id}`,
+        artist: track.artist || 'YouTube Music',
+        movie: track.isYouTube ? 'YouTube Stream' : (track.movie || 'KS Lounge'),
+        duration: track.duration || '3:30',
+        cover: track.cover || `https://i.ytimg.com/vi/${track.id}/hqdefault.jpg`,
+        isCustom: true,
+      };
+
+      const insertIndex = Math.min(currentSongIndex + 1, currentSongs.length);
+      const updatedSongs = [
+        ...currentSongs.slice(0, insertIndex),
+        newSong,
+        ...currentSongs.slice(insertIndex),
+      ];
+
+      setCustomPlaylistSongs((prev) => ({
+        ...prev,
+        [targetPlaylistId]: updatedSongs,
+      }));
+
+      setCurrentSongIndex(insertIndex);
+      radio.playTrack(track.id);
+    }
+  }, [activePlaylistId, customPlaylistSongs, currentSongIndex, radio.playTrack]);
 
   const handleToggleRepeat = useCallback(() => {
     setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'));
@@ -134,7 +194,7 @@ export default function App() {
     return () => document.removeEventListener('fullscreenchange', onFsChange);
   }, []);
 
-  // Keyboard controls: Space for play/pause, M for mute, F for fullscreen
+  // Keyboard controls: Space for play/pause, M for mute, F for fullscreen, / or Ctrl+K for search
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['input', 'textarea'].includes(e.target.tagName.toLowerCase())) return;
@@ -146,6 +206,9 @@ export default function App() {
         radio.toggleMute();
       } else if (e.code === 'KeyF') {
         handleToggleFullscreen();
+      } else if (e.key === '/' || (e.ctrlKey && e.key === 'k') || (e.metaKey && e.key === 'k')) {
+        e.preventDefault();
+        setIsSearchModalOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -157,11 +220,13 @@ export default function App() {
       {/* 1. Atmospheric Background Scene & Dust/Rain Canvas */}
       <BackgroundScene activePlaylist={activePlaylist} />
 
-      {/* 2. Top Header Navigation (Logo, Live Listeners Pill, Playlist Pill) */}
+      {/* 2. Top Header Navigation (Logo, Live Listeners Pill, Search, Screen-Off, Playlist Pill) */}
       <HeaderNav
         activePlaylist={activePlaylist}
         onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
+        onOpenSearch={() => setIsSearchModalOpen(true)}
+        onToggleScreenOff={() => setIsScreenOffActive(true)}
       />
 
       {/* 3. 3D Coverflow Song Changing Carousel */}
@@ -172,6 +237,7 @@ export default function App() {
           onSelectSong={handleSelectSong}
           isPlaying={radio.isPlaying}
           activePlaylist={activePlaylist}
+          onOpenSearch={() => setIsSearchModalOpen(true)}
         />
       </main>
 
@@ -197,9 +263,18 @@ export default function App() {
         onOpenShare={() => setIsShareModalOpen(true)}
         isFullscreen={isFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
+        onToggleScreenOff={() => setIsScreenOffActive(true)}
       />
 
       {/* 5. Modals */}
+      <SearchModal
+        isOpen={isSearchModalOpen}
+        onClose={() => setIsSearchModalOpen(false)}
+        onPlayTrack={handlePlayTrack}
+        activePlaylistId={activePlaylistId}
+        currentSongId={currentSong?.id}
+      />
+
       <PlaylistModal
         isOpen={isPlaylistModalOpen}
         onClose={() => setIsPlaylistModalOpen(false)}
@@ -207,6 +282,7 @@ export default function App() {
         onSelectPlaylist={handleSelectPlaylist}
         currentSongId={currentSong?.id}
         onSelectSongById={handleSelectSongById}
+        activePlaylistSongs={activePlaylist.songs}
       />
 
       <ShareModal
@@ -221,7 +297,15 @@ export default function App() {
         onClose={() => setIsAboutModalOpen(false)}
       />
 
-      {/* 6. Hidden YouTube Audio Streamer Player Element */}
+      {/* 6. OLED Screen-Off Mode Overlay (Blackout Mode) */}
+      <ScreenOffOverlay
+        isActive={isScreenOffActive}
+        onClose={() => setIsScreenOffActive(false)}
+        currentSong={currentSong}
+        isPlaying={radio.isPlaying}
+      />
+
+      {/* 7. Hidden YouTube Audio Streamer Player Element */}
       <div
         style={{
           position: 'fixed',

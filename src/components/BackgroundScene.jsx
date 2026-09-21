@@ -6,7 +6,7 @@ export default function BackgroundScene({ activePlaylist }) {
   const theme = activePlaylist?.theme || (
     activePlaylist?.id === 'barish' ? 'barish' :
     activePlaylist?.id === 'english-indie' ? 'aurora' :
-    activePlaylist?.id === 'indie-2026' ? 'indie' : 'dreamvelly'
+    activePlaylist?.id === 'indie-2026' ? 'indie' : 'dreamvalley'
   );
 
   const currentBg = activePlaylist?.bg || (
@@ -98,7 +98,7 @@ export default function BackgroundScene({ activePlaylist }) {
     };
 
     // ==========================================
-    // 2. DREAMVELLY 2026 (METEOR SHOWER / ULKA PIND)
+    // 2. DREAMVALLEY 2026 (METEOR SHOWER / ULKA PIND)
     // ==========================================
     let meteors = [];
     let meteorSpawnTimer = 25 + Math.random() * 35;
@@ -326,7 +326,7 @@ export default function BackgroundScene({ activePlaylist }) {
         });
 
       } else {
-        // --- 4. DREAMVELLY 2026: GRACEFUL METEOR SHOWER (NO JUGNOO) ---
+        // --- 4. DREAMVALLEY 2026: GRACEFUL METEOR SHOWER (NO JUGNOO) ---
         meteorSpawnTimer -= 1;
         if (meteorSpawnTimer <= 0) {
           // Spawn 1 or 2 meteors

@@ -13,6 +13,7 @@ import {
   Maximize,
   Minimize,
   Loader2,
+  Moon,
 } from 'lucide-react';
 
 function formatTime(seconds) {
@@ -43,6 +44,7 @@ export default function BottomPlayerDock({
   onOpenShare,
   isFullscreen,
   onToggleFullscreen,
+  onToggleScreenOff,
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
 
@@ -180,6 +182,16 @@ export default function BottomPlayerDock({
               >
                 <Share2 size={15} />
               </button>
+
+              {onToggleScreenOff && (
+                <button
+                  onClick={onToggleScreenOff}
+                  className="p-1.5 text-amber-300/70 hover:text-amber-200 active:scale-90 transition-all rounded-full"
+                  title="OLED Screen-Off Mode (Deep Sleep)"
+                >
+                  <Moon size={15} />
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -316,6 +328,16 @@ export default function BottomPlayerDock({
             >
               <Share2 size={15} />
             </button>
+
+            {onToggleScreenOff && (
+              <button
+                onClick={onToggleScreenOff}
+                className="p-1.5 text-amber-300/70 hover:text-amber-200 hover:bg-white/[0.10] rounded-full transition-all"
+                title="OLED Screen-Off Mode (Keeps playing with pitch-black screen)"
+              >
+                <Moon size={15} />
+              </button>
+            )}
 
             {/* Volume */}
             <div

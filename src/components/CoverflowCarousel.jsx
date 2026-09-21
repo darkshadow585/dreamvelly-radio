@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import { Search } from 'lucide-react';
 
 export default function CoverflowCarousel({
   songs,
@@ -6,6 +7,7 @@ export default function CoverflowCarousel({
   onSelectSong,
   isPlaying,
   activePlaylist,
+  onOpenSearch,
 }) {
   const containerRef = useRef(null);
   const [dragStartX, setDragStartX] = useState(null);
@@ -21,7 +23,7 @@ export default function CoverflowCarousel({
   }, []);
 
   const totalSongs = songs.length;
-  const line1 = activePlaylist?.titleLine1 || 'DREAMVELLY';
+  const line1 = activePlaylist?.titleLine1 || 'DREAMVALLEY';
   const line2 = activePlaylist?.titleLine2 || '2026';
 
   // Responsive device classification based on state
@@ -73,7 +75,7 @@ export default function CoverflowCarousel({
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col items-center justify-start pt-16 sm:pt-10 md:pt-7 select-none overflow-hidden">
+    <div className="absolute inset-0 flex flex-col items-center justify-start pt-16 sm:pt-12 md:pt-9 select-none overflow-hidden">
       {/* 
         1. HERO HEADING — DYNAMIC PLAYLIST TITLE:
         Teko bold display font, warm off-white, tight leading, sitting behind the carousel cards.

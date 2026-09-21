@@ -1,4 +1,4 @@
-// Curated Playlist for DREAMVELLY 2026
+// Curated Playlist for DREAMVALLEY 2026
 // Curated by KS
 
 function ytThumb(videoId) {
@@ -7,15 +7,15 @@ function ytThumb(videoId) {
 
 export const PLAYLISTS = [
   {
-    id: "dreamvelly-2026",
-    name: "DREAMVELLY 2026 ✨",
-    titleLine1: "DREAMVELLY",
+    id: "dreamvalley-2026",
+    name: "DREAMVALLEY 2026 ✨",
+    titleLine1: "DREAMVALLEY",
     titleLine2: "2026",
     badge: "Official Collection",
     description: "Curated romantic and soulful melodies by KS",
     icon: "✨",
     bg: "/dreamevelly_bg.jpg",
-    theme: "dreamvelly",
+    theme: "dreamvalley",
     songs: [
       // --- Jubin Nautiyal Collection ---
       {

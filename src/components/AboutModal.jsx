@@ -21,7 +21,7 @@ export default function AboutModal({ isOpen, onClose }) {
               <h3 className="text-base font-semibold text-[#F4EFE8] flex items-center gap-1.5">
                 KS Music Lounge <Sparkles size={14} className="text-amber-400" />
               </h3>
-              <p className="text-[11px] text-[#F4EFE8]/50">Curated by KS • DREAMVELLY & INDIE 2026</p>
+              <p className="text-[11px] text-[#F4EFE8]/50">Curated by KS • DREAMVALLEY & INDIE 2026</p>
             </div>
           </div>
           <button
@@ -35,9 +35,10 @@ export default function AboutModal({ isOpen, onClose }) {
         <div className="space-y-3.5 text-xs sm:text-sm text-[#F4EFE8]/75 leading-relaxed max-h-[60vh] overflow-y-auto no-scrollbar">
           <p>
             <strong className="text-[#F4EFE8]">KS Music Lounge</strong> offers an exclusive, atmospheric
-            cinematic music experience presenting timeless, soulful melodies across two distinct channels:
-            <strong className="text-amber-300"> DREAMVELLY 2026</strong> (romantic Bollywood anthems) and
-            <strong className="text-amber-300"> INDIE 2026</strong> (Indian indie, acoustic & soulful waves).
+            cinematic music experience presenting timeless, soulful melodies across channels:
+            <strong className="text-amber-300"> DREAMVALLEY 2026</strong> (romantic Bollywood anthems),
+            <strong className="text-amber-300"> BARISH</strong> (monsoon melodies), and
+            <strong className="text-amber-300"> INDIE 2026</strong> (acoustic & soulful waves).
           </p>
           <p>
             Immerse yourself in haunting vocals, acoustic harmonies, and evergreen classics
