@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iceland Northern Lights • Fluid WebGL Aurora</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #030710;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: #fff;
+    }
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    
+    /* Overlay UI for English Theme */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 3rem 4rem;
+      pointer-events: none;
+      background: radial-gradient(circle at center, transparent 40%, rgba(3, 7, 16, 0.45) 100%);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      pointer-events: auto;
+    }
+    .logo {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: #e2fdf5;
+      text-shadow: 0 0 20px rgba(52, 232, 172, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #34e8ac;
+      box-shadow: 0 0 14px #34e8ac, 0 0 28px #34e8ac;
+      animation: pulse 2.5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.5; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.3); }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .nav-links a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.3s, text-shadow 0.3s;
+    }
+    .nav-links a:hover {
+      color: #79ffe1;
+      text-shadow: 0 0 10px rgba(121, 255, 225, 0.8);
+    }
+
+    .main-content {
+      max-width: 680px;
+      pointer-events: auto;
+    }
+    .eyebrow {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #79ffe1;
+      margin-bottom: 1rem;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(121, 255, 225, 0.1);
+      border: 1px solid rgba(121, 255, 225, 0.25);
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.5rem, 5vw, 4.2rem);
+      line-height: 1.1;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #ffffff 40%, #b8ffea 75%, #a78bfa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 40px rgba(121, 255, 225, 0.25);
+    }
+    p.desc {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: rgba(230, 245, 245, 0.85);
+      font-weight: 300;
+      margin-bottom: 2rem;
+      max-width: 540px;
+    }
+
+    .cta-group {
+      display: flex;
+      gap: 1.25rem;
+      align-items: center;
+    }
+    .btn-primary {
+      padding: 14px 32px;
+      border-radius: 30px;
+      background: linear-gradient(135deg, #2dd4bf, #059669);
+      color: #022018;
+      font-weight: 600;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      box-shadow: 0 0 25px rgba(45, 212, 191, 0.45);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 35px rgba(45, 212, 191, 0.7);
+      background: linear-gradient(135deg, #5eead4, #10b981);
+    }
+    .btn-glass {
+      padding: 14px 28px;
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      text-decoration: none;
+      backdrop-filter: blur(12px);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .btn-glass:hover {
+      background: rgba(255, 255, 255, 0.14);
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: auto;
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 0.05em;
+    }
+    .hud-stats {
+      display: flex;
+      gap: 2.5rem;
+    }
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .stat-val {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      color: #bbf7d0;
+      font-weight: 600;
+    }
+
+    /* Floating control bar for fluid interactivity */
+    .controls-panel {
+      position: absolute;
+      right: 3rem;
+      bottom: 3rem;
+      z-index: 20;
+      background: rgba(8, 18, 28, 0.65);
+      border: 1px solid rgba(121, 255, 225, 0.2);
+      backdrop-filter: blur(16px);
+      padding: 18px 24px;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 250px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    }
+    .control-label {
+      font-size: 0.72rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      display: flex;
+      justify-content: space-between;
+    }
+    .slider {
+      width: 100%;
+      accent-color: #34e8ac;
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .hero-overlay { padding: 2rem; }
+      .controls-panel { display: none; }
+      .hud-stats { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="canvas-container">
+    <canvas id="auroraCanvas"></canvas>
+  </div>
+
+  <div class="hero-overlay">
+    <header>
+      <div class="logo">
+        <span class="logo-badge"></span>
+        ICELAND • ARCTIC
+      </div>
+      <nav class="nav-links">
+        <a href="#expeditions">Expeditions</a>
+        <a href="#glaciers">Glaciers</a>
+        <a href="#aurora">Aurora Borealis</a>
+      </nav>
+    </header>
+
+    <div class="main-content">
+      <span class="eyebrow">Interactive Fluid Physics</span>
+      <h1>Dancing Lights Above Iceland</h1>
+      <p class="desc">
+        Experience the ethereal geomagnetic spectacle of the Aurora Borealis sweeping across Iceland's pristine snowfields and glacial fjords in real-time fluid dynamics.
+      </p>
+      <div class="cta-group">
+        <button class="btn-primary" onclick="boostAurora()">Surge Aurora</button>
+        <button class="btn-glass" onclick="toggleColorMode()">Shift Palette</button>
+      </div>
+    </div>
+
+    <footer>
+      <div class="hud-stats">
+        <div class="stat-item">
+          <span>LATITUDE</span>
+          <span class="stat-val">64.9631° N</span>
+        </div>
+        <div class="stat-item">
+          <span>GEOMAGNETIC KP</span>
+          <span class="stat-val" id="kpVal">7.2 HIGH</span>
+        </div>
+        <div class="stat-item">
+          <span>ATMOSPHERE</span>
+          <span class="stat-val">-14°C CLEAR</span>
+        </div>
+      </div>
+      <div>Move mouse to steer magnetic wind ripples</div>
+    </footer>
+  </div>
+
+  <!-- Interactive Controls Widget -->
+  <div class="controls-panel">
+    <div class="control-label">
+      <span>Flow Speed</span>
+      <span id="speedDisplay">1.0x</span>
+    </div>
+    <input type="range" class="slider" id="speedSlider" min="0.2" max="3.0" step="0.1" value="1.0">
+
+    <div class="control-label">
+      <span>Luminescence</span>
+      <span id="lumDisplay">1.2</span>
+    </div>
+    <input type="range" class="slider" id="intensitySlider" min="0.5" max="2.5" step="0.1" value="1.2">
+  </div>
+
+  <!-- WebGL Fluid Aurora Shader Engine -->
+  <script>
+    const canvas = document.getElementById('auroraCanvas');
+    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+
+    if (!gl) {
+      alert('WebGL not supported on this browser.');
+    }
+
+    // Vertex Shader: Fullscreen quad
+    const vsSource = `
+      attribute vec2 aPosition;
+      varying vec2 vUv;
+      void main() {
+        vUv = aPosition * 0.5 + 0.5;
+        gl_Position = vec4(aPosition, 0.0, 1.0);
+      }
+    `;
+
+    // High-performance Fragment Shader with Volumetric Aurora & Mountain Silhouette & Water/Ice Reflections
+    const fsSource = `
+      precision highp float;
+      varying vec2 vUv;
+      uniform vec2 uResolution;
+      uniform float uTime;
+      uniform vec2 uMouse;
+      uniform float uIntensity;
+      uniform float uColorTheme;
+
+      // Fast Hash & 2D Perlin Noise
+      float hash(vec2 p) {
+        return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453123);
+      }
+
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float a = hash(i);
+        float b = hash(i + vec2(1.0, 0.0));
+        float c = hash(i + vec2(0.0, 1.0));
+        float d = hash(i + vec2(1.0, 1.0));
+        return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+      }
+
+      // Fractional Brownian Motion (fBM) with domain warping for realistic fluid ribbons
+      float fbm(vec2 p) {
+        float v = 0.0;
+        float a = 0.5;
+        vec2 shift = vec2(100.0);
+        mat2 rot = mat2(cos(0.5), sin(0.5), -sin(0.5), cos(0.5));
+        for (int i = 0; i < 4; ++i) {
+          v += a * noise(p);
+          p = rot * p * 2.0 + shift;
+          a *= 0.5;
+        }
+        return v;
+      }
+
+      // Aurora ray / ribbon field
+      vec4 auroraLayer(vec2 uv, float t) {
+        // Domain warping for organic fluid waving
+        vec2 q = vec2(fbm(uv + vec2(0.0, t * 0.1)), fbm(uv + vec2(5.2, 1.3)));
+        vec2 r = vec2(fbm(uv + 4.0 * q + vec2(1.7 - t * 0.15, 9.2)), fbm(uv + 4.0 * q + vec2(8.3, 2.8)));
+
+        float f = fbm(uv + 3.0 * r);
+
+        // Vertical streaks imitating magnetic solar particles
+        float verticalStripes = sin(uv.x * 28.0 + f * 6.0 + t * 0.8) * 0.5 + 0.5;
+        verticalStripes = pow(verticalStripes, 3.0);
+
+        // Height curve (aurora appears high in the sky and fades near mountains)
+        float heightMask = smoothstep(0.32, 0.75, uv.y) * smoothstep(1.05, 0.65, uv.y);
+
+        // Aurora density
+        float density = smoothstep(0.2, 0.85, f) * heightMask * (0.6 + 0.4 * verticalStripes);
+
+        // Dynamic Color Palettes
+        vec3 colEmerald = vec3(0.15, 0.95, 0.65); // Pure emerald cyan
+        vec3 colPurple  = vec3(0.68, 0.25, 0.95); // Deep violet top
+        vec3 colTurq    = vec3(0.05, 0.65, 0.95); // Cyan base
+
+        if (uColorTheme > 0.5 && uColorTheme < 1.5) {
+          // Violet / Magenta theme
+          colEmerald = vec3(0.85, 0.25, 0.95);
+          colPurple  = vec3(0.25, 0.75, 1.0);
+          colTurq    = vec3(0.95, 0.35, 0.65);
+        } else if (uColorTheme > 1.5) {
+          // Arctic Gold & Cyan Solar Flare
+          colEmerald = vec3(0.2, 0.95, 0.8);
+          colPurple  = vec3(1.0, 0.6, 0.15);
+          colTurq    = vec3(0.1, 0.4, 0.95);
+        }
+
+        vec3 auroraCol = mix(colTurq, colEmerald, smoothstep(0.35, 0.65, uv.y));
+        auroraCol = mix(auroraCol, colPurple, smoothstep(0.6, 0.9, uv.y + f * 0.2));
+
+        return vec4(auroraCol * density, density);
+      }
+
+      // Icelandic Mountain Silhouette function
+      float mountainHeight(float x) {
+        float h = sin(x * 3.5) * 0.08 + sin(x * 7.2) * 0.04 + sin(x * 15.0) * 0.02;
+        h += noise(vec2(x * 10.0, 0.0)) * 0.06;
+        return 0.32 + h;
+      }
+
+      void main() {
+        vec2 uv = gl_FragCoord.xy / uResolution.xy;
+        float aspect = uResolution.x / uResolution.y;
+        vec2 p = uv;
+        p.x *= aspect;
+
+        float t = uTime * 0.6;
+
+        // Interaction from mouse
+        vec2 m = (uMouse - 0.5) * 0.15;
+        p.x += m.x;
+
+        // Deep arctic night sky gradient
+        vec3 skyColor = mix(vec3(0.015, 0.03, 0.06), vec3(0.005, 0.01, 0.025), uv.y);
+
+        // Starfield
+        vec2 starCoord = p * 180.0;
+        float s = hash(floor(starCoord));
+        if (s > 0.985 && uv.y > 0.35) {
+          float twinkle = sin(uTime * 3.0 + s * 100.0) * 0.5 + 0.5;
+          skyColor += vec3(twinkle * 0.75) * smoothstep(0.985, 1.0, s);
+        }
+
+        // Aurora ribbons pass
+        vec4 aurora = auroraLayer(vec2(p.x * 0.7, p.y), t);
+        aurora += auroraLayer(vec2(p.x * 1.1 + 2.5, p.y * 1.05), t * 1.25) * 0.6;
+        
+        vec3 finalColor = skyColor + aurora.rgb * uIntensity;
+
+        // Icelandic Snowy Mountain and Icy Glacier Lake
+        float mH = mountainHeight(uv.x);
+
+        if (uv.y < mH) {
+          // Inside Mountain & Snowfield
+          float snowSlope = smoothstep(mH - 0.12, mH, uv.y);
+          vec3 rockColor = vec3(0.04, 0.06, 0.08);
+          vec3 snowColor = vec3(0.75, 0.85, 0.95);
+
+          // Snow textures on peaks
+          float snowPatches = noise(uv * vec2(40.0, 20.0));
+          vec3 landColor = mix(rockColor, snowColor, clamp(snowPatches + snowSlope * 0.6, 0.0, 1.0));
+
+          // Aurora reflection on white snow & glacier ice!
+          vec3 snowGlow = aurora.rgb * 0.45;
+          landColor += snowGlow;
+
+          // Frozen lake / fjord in foreground
+          if (uv.y < 0.16) {
+            float iceReflection = 0.5 + 0.5 * sin(uv.x * 60.0 + noise(vec2(uv.y * 80.0, uTime * 0.5)));
+            vec3 lakeReflect = aurora.rgb * 0.5 * iceReflection;
+            landColor = mix(vec3(0.03, 0.07, 0.1), landColor, 0.4) + lakeReflect;
+          }
+
+          finalColor = landColor;
+        } else {
+          // Atmospheric haze / glow over mountain ridge
+          float horizonGlow = smoothstep(mH + 0.1, mH, uv.y);
+          finalColor += vec3(0.04, 0.15, 0.12) * horizonGlow * uIntensity;
+        }
+
+        // Cinematic Vignette & Tone curve
+        float vignette = uv.x * uv.y * (1.0 - uv.x) * (1.0 - uv.y);
+        finalColor *= clamp(16.0 * vignette, 0.25, 1.0);
+
+        gl_FragColor = vec4(finalColor, 1.0);
+      }
+    `;
+
+    function createShader(gl, type, source) {
+      const shader = gl.createShader(type);
+      gl.shaderSource(shader, source);
+      gl.compileShader(shader);
+      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        gl.deleteShader(shader);
+        return null;
+      }
+      return shader;
+    }
+
+    const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+    const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    const program = gl.createProgram();
+    gl.attachShader(program, vs);
+    gl.attachShader(program, fs);
+    gl.linkProgram(program);
+
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+      console.error('Program link error:', gl.getProgramInfoLog(program));
+    }
+
+    gl.useProgram(program);
+
+    // Quad geometry
+    const positionBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+      -1, -1,
+       1, -1,
+      -1,  1,
+      -1,  1,
+       1, -1,
+       1,  1,
+    ]), gl.STATIC_DRAW);
+
+    const aPosition = gl.getAttribLocation(program, 'aPosition');
+    gl.enableVertexAttribArray(aPosition);
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+
+    // Uniform locations
+    const uResolution = gl.getUniformLocation(program, 'uResolution');
+    const uTime = gl.getUniformLocation(program, 'uTime');
+    const uMouse = gl.getUniformLocation(program, 'uMouse');
+    const uIntensity = gl.getUniformLocation(program, 'uIntensity');
+    const uColorTheme = gl.getUniformLocation(program, 'uColorTheme');
+
+    let currentSpeed = 1.0;
+    let currentIntensity = 1.2;
+    let colorTheme = 0.0;
+    let mouseX = 0.5, mouseY = 0.5;
+    let targetMouseX = 0.5, targetMouseY = 0.5;
+
+    function resize() {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.uniform2f(uResolution, canvas.width, canvas.height);
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    window.addEventListener('mousemove', (e) => {
+      targetMouseX = e.clientX / window.innerWidth;
+      targetMouseY = 1.0 - (e.clientY / window.innerHeight);
+    });
+
+    let startTime = performance.now();
+    let accumulatedTime = 0;
+    let lastStamp = startTime;
+
+    function render(timestamp) {
+      const delta = (timestamp - lastStamp) * 0.001;
+      lastStamp = timestamp;
+      accumulatedTime += delta * currentSpeed;
+
+      // Smooth mouse follow
+      mouseX += (targetMouseX - mouseX) * 0.05;
+      mouseY += (targetMouseY - mouseY) * 0.05;
+
+      gl.uniform1f(uTime, accumulatedTime);
+      gl.uniform2f(uMouse, mouseX, mouseY);
+      gl.uniform1f(uIntensity, currentIntensity);
+      gl.uniform1f(uColorTheme, colorTheme);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+      requestAnimationFrame(render);
+    }
+    requestAnimationFrame(render);
+
+    // Controls
+    const speedSlider = document.getElementById('speedSlider');
+    const speedDisplay = document.getElementById('speedDisplay');
+    speedSlider.addEventListener('input', (e) => {
+      currentSpeed = parseFloat(e.target.value);
+      speedDisplay.innerText = currentSpeed.toFixed(1) + 'x';
+    });
+
+    const intensitySlider = document.getElementById('intensitySlider');
+    const lumDisplay = document.getElementById('lumDisplay');
+    intensitySlider.addEventListener('input', (e) => {
+      currentIntensity = parseFloat(e.target.value);
+      lumDisplay.innerText = currentIntensity.toFixed(1);
+    });
+
+    window.boostAurora = function() {
+      currentIntensity = 2.4;
+      intensitySlider.value = 2.4;
+      lumDisplay.innerText = '2.4';
+      document.getElementById('kpVal').innerText = '8.9 SOLAR STORM';
+      setTimeout(() => {
+        currentIntensity = 1.2;
+        intensitySlider.value = 1.2;
+        lumDisplay.innerText = '1.2';
+        document.getElementById('kpVal').innerText = '7.2 HIGH';
+      }, 4000);
+    };
+
+    window.toggleColorMode = function() {
+      colorTheme = (colorTheme + 1.0) % 3.0;
+    };
+  </script>
+</body>
+</html>
