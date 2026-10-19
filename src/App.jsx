@@ -8,9 +8,11 @@ import ShareModal from './components/ShareModal';
 import AboutModal from './components/AboutModal';
 import SearchModal from './components/SearchModal';
 import StoryStudioModal from './components/StoryStudioModal';
+import SoundscapeModal from './components/SoundscapeModal';
 import ScreenOffOverlay from './components/ScreenOffOverlay';
 import { PLAYLISTS } from './data/playlists';
 import { useYouTubeRadio } from './hooks/useYouTubeRadio';
+import { ambientAudio } from './utils/ambientAudio';
 
 export default function App() {
   // Read initial playlist and song from URL query params
@@ -24,6 +26,55 @@ export default function App() {
       openModal: params.get('modal') || null,
     };
   }, []);
+
+  // Persisted Liked Songs Vault
+  const [likedSongIds, setLikedSongIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dreamvalley_liked_songs');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const handleToggleLike = useCallback((songId) => {
+    if (!songId) return;
+    setLikedSongIds((prev) => {
+      const next = prev.includes(songId)
+        ? prev.filter((id) => id !== songId)
+        : [...prev, songId];
+      try {
+        localStorage.setItem('dreamvalley_liked_songs', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  // Multi-Channel Soundscape Mixer State
+  const [layerVolumes, setLayerVolumes] = useState({
+    rain: 0,
+    waves: 0,
+    vinyl: 0,
+    fire: 0,
+  });
+
+  const handleChangeLayer = useCallback((layerId, val) => {
+    ambientAudio.setLayerVolume(layerId, val);
+    setLayerVolumes((prev) => ({ ...prev, [layerId]: val }));
+  }, []);
+
+  const handleResetLayers = useCallback(() => {
+    ambientAudio.stopAllLayers();
+    setLayerVolumes({ rain: 0, waves: 0, vinyl: 0, fire: 0 });
+  }, []);
+
+  const hasActiveSoundscape = useMemo(
+    () => Object.values(layerVolumes).some((v) => v > 0.01),
+    [layerVolumes]
+  );
+
+  // Smart Sleep Timer (in seconds)
+  const [sleepRemainingSecs, setSleepRemainingSecs] = useState(0);
 
   // Playlist management with dynamic custom tracks support
   const [customPlaylistSongs, setCustomPlaylistSongs] = useState(() => {
@@ -73,6 +124,7 @@ export default function App() {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isSoundscapeOpen, setIsSoundscapeOpen] = useState(false);
   const [isStoryStudioOpen, setIsStoryStudioOpen] = useState(
     () => initialParams.openModal === 'story'
   );
@@ -115,6 +167,28 @@ export default function App() {
     onNext: handleNext,
     onPrev: handlePrev,
   });
+
+  // Smart Sleep Timer Countdown Effect
+  useEffect(() => {
+    if (sleepRemainingSecs <= 0) return;
+    const timer = setInterval(() => {
+      setSleepRemainingSecs((prev) => {
+        if (prev <= 1) {
+          if (radio.isPlaying) radio.togglePlay();
+          ambientAudio.stopAllLayers();
+          setLayerVolumes({ rain: 0, waves: 0, vinyl: 0, fire: 0 });
+          setIsScreenOffActive(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [sleepRemainingSecs, radio.isPlaying, radio.togglePlay]);
+
+  const handleSetSleepMinutes = useCallback((mins) => {
+    setSleepRemainingSecs(mins > 0 ? mins * 60 : 0);
+  }, []);
 
   // Sync URL when song or playlist changes
   useEffect(() => {
@@ -268,6 +342,10 @@ export default function App() {
           onOpenSearch={() => setIsSearchModalOpen(true)}
           onOpenStoryStudio={() => setIsStoryStudioOpen(true)}
           onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
+          onOpenSoundscape={() => setIsSoundscapeOpen(true)}
+          likedSongIds={likedSongIds}
+          onToggleLike={handleToggleLike}
+          hasActiveSoundscape={hasActiveSoundscape}
         />
       </main>
 
@@ -293,9 +371,13 @@ export default function App() {
         onToggleRepeat={handleToggleRepeat}
         onOpenShare={() => setIsShareModalOpen(true)}
         onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
+        onOpenSoundscape={() => setIsSoundscapeOpen(true)}
+        hasActiveSoundscape={hasActiveSoundscape}
+        sleepRemainingSecs={sleepRemainingSecs}
+        isLiked={currentSong ? likedSongIds.includes(currentSong.id) : false}
+        onToggleLike={handleToggleLike}
         isFullscreen={isFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
-        onToggleScreenOff={() => setIsScreenOffActive(true)}
       />
 
       {/* 5. Redesigned Level 5 Modals */}
@@ -317,6 +399,18 @@ export default function App() {
         activePlaylistSongs={activePlaylist.songs}
         isPlaying={radio.isPlaying}
         onToggleShuffle={handleToggleShuffle}
+        likedSongIds={likedSongIds}
+        onToggleLike={handleToggleLike}
+      />
+
+      <SoundscapeModal
+        isOpen={isSoundscapeOpen}
+        onClose={() => setIsSoundscapeOpen(false)}
+        layerVolumes={layerVolumes}
+        onChangeLayer={handleChangeLayer}
+        onResetLayers={handleResetLayers}
+        sleepRemainingSecs={sleepRemainingSecs}
+        onSetSleepMinutes={handleSetSleepMinutes}
       />
 
       <ShareModal

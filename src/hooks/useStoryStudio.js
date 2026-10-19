@@ -1,26 +1,30 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { ambientAudio } from '../utils/ambientAudio';
 
+// Tiny 44-byte silent WAV used to unlock HTMLAudioElement synchronously on user click
+const SILENT_UNLOCK_WAV =
+  'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
 export const QUICK_GENERATE_SPARKS = [
-  'An aging watchmaker in Shimla finds a 30-year-old unmailed letter hidden inside a broken pocket watch',
-  'A late-night radio host receives an anonymous call from someone who remembers a childhood promise',
-  'Two estranged brothers meet at their ancestral house on the night before it is sold forever',
-  'A passenger on the last winter express realizes the stranger opposite them is carrying their old diary',
-  'In a quiet apartment, a voice recording on an old cassette tape reveals what really happened that summer',
+  'भानगढ़ के पास एक वीरान डाकबंगले में रात २ बजे चौकीदार को बंद कमरे से किसी अनजान साये की फुसफुसाहट, डरावनी हँसी और गुस्से भरी आवाज़ सुनाई देती है',
+  'शिमला के एक बुज़ुर्ग घड़ीसाज़ को तीस साल पुरानी जेब-घड़ी के ढक्कन के पीछे एक अधूरा पता और सूखा देवदार का पत्ता मिलता है',
+  'इलाहाबाद की पुश्तैनी हवेली बिकने से आख़िरी शाम पहले दो भाई आँगन के धुँधलके में पिताजी की बंद अलमारी की चाबी ढूँढते हैं',
+  'रात दो बजे के रेडियो शो में एक अनजान बुज़ुर्ग कॉलर हर शुक्रवार को १९७४ की एक ही ग़ज़ल फरमाइश करता है',
+  'दरियागंज के एक पुराने बरसाती कमरे की बंद दराज़ में मिली १९९९ की कैसेट दो भाइयों के बीच की बीस साल पुरानी ख़ामोशी तोड़ देती है',
 ];
 
 export const QUICK_REAL_STORY_SPARKS = [
-  'Dashrath Manjhi carving a road through a mountain over 22 years alone',
-  'The overnight vanishing of Kuldhara village in Rajasthan',
-  'Hachiko waiting every evening for 9 years at Shibuya station',
-  'Apollo 13 astronauts surviving 87 hours in the dark of space',
-  'Neerja Bhanot saving hundreds of lives aboard Flight 73',
+  'दशरथ मांझी की २२ साल तक अकेले पहाड़ का सीना चीरकर रास्ता बनाने की सच्ची दास्तान',
+  'राजस्थान के कुलधरा गाँव का एक ही रात में अपनी दहलीज़ छोड़कर हमेशा के लिए वीरान हो जाने का रहस्य',
+  'शिबुया स्टेशन की दहलीज़ पर ९ साल तक हर शाम अपने मालिक का इंतज़ार करने वाले हाचिको की कहानी',
+  'फ्लाइट 73 में सैकड़ों मुसाफ़िरों की जान बचाने वाली नीरजा भनोट के हौसले और बलिदान की सच्ची कहानी',
+  'अंतरिक्ष के सन्नाटे में ८७ घंटे तक ज़िंदगी की जंग लड़ने वाले अपोलो १३ के यात्रियों की सच्ची घटना',
 ];
 
 export const STORY_LANGUAGES = [
-  { id: 'hindi', label: 'Hindi', desc: 'Natural spoken Hindi' },
-  { id: 'hinglish', label: 'Hinglish', desc: 'Conversational Hindi-English' },
-  { id: 'english', label: 'English', desc: 'Cinematic English prose' },
+  { id: 'hindi', label: 'Hindi (अदबी हिंदी)', desc: 'Evocative Hindustani & Hindi prose' },
+  { id: 'hinglish', label: 'Hinglish', desc: 'Literary Hindustani-English blend' },
+  { id: 'english', label: 'English', desc: 'Contemporary literary fiction' },
 ];
 
 export const NARRATOR_VOICES = [
@@ -67,11 +71,11 @@ export const NARRATOR_VOICES = [
 ];
 
 export const LEVEL5_PROCESS_TELEMETRY = [
-  'Initializing SoulWriter psychological subtext engine...',
-  'Mapping character motivations, hesitations, and sensory cues...',
-  'Structuring multi-scene narrative arc with vocal emotion markers...',
-  'Synthesizing Part 1 neural voice stream for instant playback...',
-  'Calibrating acoustic breath, sigh, and room ambiance layers...',
+  'Initializing Literary Novelist persona & character psychology...',
+  'Structuring 5-act dramatic pacing, subtext & micro-gestures...',
+  'Weaving evocative Hindustani/Hinglish literary vocabulary...',
+  'Scoring vocal breath, sigh & caesura cues for Gemini 3.8 TTS...',
+  'Calibrating room acoustics & synchronized manuscript teleprompter...',
 ];
 
 function base64ToBlobUrl(base64) {
@@ -103,7 +107,6 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
   const [errorMessage, setErrorMessage] = useState(null);
 
   // Scene-by-Scene Progressive Audio Streaming State
-  // Each entry in bufferedScenes is either a blobUrl string OR 'BROWSER_TTS'
   const [bufferedScenes, setBufferedScenes] = useState({});
   const [isBufferingBackground, setIsBufferingBackground] = useState(false);
   const [loadingSceneIndex, setLoadingSceneIndex] = useState(null);
@@ -113,12 +116,12 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [voiceVolume, setVoiceVolume] = useState(0.92);
+  const [voiceVolume, setVoiceVolume] = useState(0.95);
   const [activeParagraphIndex, setActiveParagraphIndex] = useState(0);
 
   // Ambient Layer
   const [ambientEnabled, setAmbientEnabled] = useState(true);
-  const [ambientVolume, setAmbientVolumeState] = useState(0.26);
+  const [ambientVolume, setAmbientVolumeState] = useState(0.24);
   const [ambientType, setAmbientType] = useState('rain');
 
   const audioElementRef = useRef(null);
@@ -128,6 +131,16 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
   const storyDataRef = useRef(null);
   const runIdRef = useRef(0);
   const speechTimerRef = useRef(null);
+
+  // Stable refs for callbacks so Audio element is NEVER destroyed on re-renders
+  const onAudioStartedRef = useRef(onAudioStarted);
+  const onAudioStoppedRef = useRef(onAudioStopped);
+  const playSceneAtIndexRef = useRef(null);
+
+  useEffect(() => {
+    onAudioStartedRef.current = onAudioStarted;
+    onAudioStoppedRef.current = onAudioStopped;
+  }, [onAudioStarted, onAudioStopped]);
 
   useEffect(() => {
     activeParaRef.current = activeParagraphIndex;
@@ -155,15 +168,15 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
           return prev < 58 ? prev + 3 : prev;
         }
         if (generationStep === 'synthesizing_first') {
-          return prev < 94 ? prev + 4 : prev;
+          return prev < 95 ? prev + 4 : prev;
         }
         return prev;
       });
-    }, 280);
+    }, 260);
 
     const telemetryTimer = setInterval(() => {
       setTelemetryIndex((prev) => (prev + 1) % LEVEL5_PROCESS_TELEMETRY.length);
-    }, 2500);
+    }, 2200);
 
     return () => {
       clearInterval(secTimer);
@@ -182,33 +195,50 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
     }
   }, []);
 
-  // Synthesize a single scene's audio (returns blobUrl or 'BROWSER_TTS' if quota reached)
-  const synthesizeSceneAudio = useCallback(async (sceneIdx, paragraph, voiceId, currentRunId) => {
-    if (sceneAudioUrlsRef.current[sceneIdx]) {
-      return sceneAudioUrlsRef.current[sceneIdx];
-    }
-    if (scenePromisesRef.current[sceneIdx]) {
-      return scenePromisesRef.current[sceneIdx];
-    }
+  // Synthesize a single scene's audio via /api/story/narrate (Gemini 3.8 Flash TTS)
+  const synthesizeSceneAudio = useCallback(
+    async (sceneIdx, paragraph, voiceId, currentRunId) => {
+      if (sceneAudioUrlsRef.current[sceneIdx]) {
+        return sceneAudioUrlsRef.current[sceneIdx];
+      }
+      if (scenePromisesRef.current[sceneIdx]) {
+        return scenePromisesRef.current[sceneIdx];
+      }
 
-    const scriptText = paragraph.spokenScript || paragraph.text;
-    const promise = (async () => {
-      try {
-        const res = await fetch('/api/story/narrate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            script: scriptText,
-            voice: voiceId,
-          }),
-        });
+      const scriptText = paragraph.spokenScript || paragraph.text;
+      const promise = (async () => {
+        try {
+          const res = await fetch('/api/story/narrate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              script: scriptText,
+              voice: voiceId,
+              vocalDirection: paragraph.vocalDirection || '',
+            }),
+          });
 
-        if (!res.ok) {
-          throw new Error('Quota fallback');
-        }
+          if (!res.ok) {
+            throw new Error('Quota fallback');
+          }
 
-        const data = await res.json();
-        if (data.useBrowserNeuralTts || !data.audioBase64) {
+          const data = await res.json();
+          if (data.useBrowserNeuralTts || !data.audioBase64) {
+            if (runIdRef.current === currentRunId) {
+              setUsingQuotaSafeVoice(true);
+              sceneAudioUrlsRef.current[sceneIdx] = 'BROWSER_TTS';
+              setBufferedScenes((prev) => ({ ...prev, [sceneIdx]: 'BROWSER_TTS' }));
+            }
+            return 'BROWSER_TTS';
+          }
+
+          const blobUrl = base64ToBlobUrl(data.audioBase64);
+          if (runIdRef.current === currentRunId) {
+            sceneAudioUrlsRef.current[sceneIdx] = blobUrl;
+            setBufferedScenes((prev) => ({ ...prev, [sceneIdx]: blobUrl }));
+          }
+          return blobUrl;
+        } catch {
           if (runIdRef.current === currentRunId) {
             setUsingQuotaSafeVoice(true);
             sceneAudioUrlsRef.current[sceneIdx] = 'BROWSER_TTS';
@@ -216,32 +246,19 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
           }
           return 'BROWSER_TTS';
         }
+      })();
 
-        const blobUrl = base64ToBlobUrl(data.audioBase64);
-        if (runIdRef.current === currentRunId) {
-          sceneAudioUrlsRef.current[sceneIdx] = blobUrl;
-          setBufferedScenes((prev) => ({ ...prev, [sceneIdx]: blobUrl }));
-        }
-        return blobUrl;
-      } catch {
-        if (runIdRef.current === currentRunId) {
-          setUsingQuotaSafeVoice(true);
-          sceneAudioUrlsRef.current[sceneIdx] = 'BROWSER_TTS';
-          setBufferedScenes((prev) => ({ ...prev, [sceneIdx]: 'BROWSER_TTS' }));
-        }
-        return 'BROWSER_TTS';
+      scenePromisesRef.current[sceneIdx] = promise;
+      try {
+        return await promise;
+      } finally {
+        delete scenePromisesRef.current[sceneIdx];
       }
-    })();
+    },
+    []
+  );
 
-    scenePromisesRef.current[sceneIdx] = promise;
-    try {
-      return await promise;
-    } finally {
-      delete scenePromisesRef.current[sceneIdx];
-    }
-  }, []);
-
-  // Play a specific scene index (supports both Cloud WAV and Zero-Quota Browser Neural Speech)
+  // Play a specific scene index
   const playSceneAtIndex = useCallback(
     async (sceneIdx) => {
       const currentStory = storyDataRef.current;
@@ -271,8 +288,38 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
 
         if (runIdRef.current !== currentRunId) return;
 
-        // Mode B: Zero-Quota Browser Neural Voice Engine
-        if (urlOrMode === 'BROWSER_TTS' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        // Pre-fetch next scene in background while current scene plays
+        if (currentStory.paragraphs[sceneIdx + 1] && !sceneAudioUrlsRef.current[sceneIdx + 1]) {
+          setIsBufferingBackground(true);
+          synthesizeSceneAudio(
+            sceneIdx + 1,
+            currentStory.paragraphs[sceneIdx + 1],
+            selectedVoice,
+            currentRunId
+          ).finally(() => {
+            if (runIdRef.current === currentRunId) {
+              setIsBufferingBackground(false);
+            }
+          });
+        }
+
+        // Mode A: Gemini Neural TTS WAV Stream
+        if (audioElementRef.current && urlOrMode && urlOrMode !== 'BROWSER_TTS') {
+          const audio = audioElementRef.current;
+          audio.src = urlOrMode;
+          audio.volume = voiceVolume;
+          audio.currentTime = 0;
+          try {
+            await audio.play();
+            setIsPlaying(true);
+            return;
+          } catch (playErr) {
+            console.warn('Audio play notice, falling back if blocked:', playErr.message);
+          }
+        }
+
+        // Mode B: Zero-Quota Browser Neural Voice Fallback
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
           const cleanText = (currentStory.paragraphs[sceneIdx].text || '').trim();
           const estimatedSecs = Math.max(8, Math.round(cleanText.split(/\s+/).length * 0.45));
           setDuration(estimatedSecs);
@@ -280,7 +327,8 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
           setIsPlaying(true);
 
           const utterance = new SpeechSynthesisUtterance(cleanText);
-          const voiceMeta = NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
+          const voiceMeta =
+            NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
           utterance.pitch = voiceMeta.pitch || 1;
           utterance.rate = voiceMeta.rate || 0.94;
           utterance.volume = voiceVolume;
@@ -306,37 +354,33 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
             if (runIdRef.current !== currentRunId) return;
             const totalScenes = storyDataRef.current?.paragraphs?.length || 0;
             if (sceneIdx + 1 < totalScenes) {
-              playSceneAtIndex(sceneIdx + 1);
+              if (playSceneAtIndexRef.current) {
+                playSceneAtIndexRef.current(sceneIdx + 1);
+              }
             } else {
               setIsPlaying(false);
               setCurrentTime(0);
               setActiveParagraphIndex(0);
               ambientAudio.stop();
-              if (onAudioStopped) onAudioStopped();
+              if (onAudioStoppedRef.current) onAudioStoppedRef.current();
             }
           };
 
           window.speechSynthesis.speak(utterance);
-          return;
-        }
-
-        // Mode A: Cloud WAV Audio Stream
-        if (audioElementRef.current && urlOrMode && urlOrMode !== 'BROWSER_TTS') {
-          audioElementRef.current.src = urlOrMode;
-          audioElementRef.current.currentTime = 0;
-          audioElementRef.current.load();
-          await audioElementRef.current.play();
-          setIsPlaying(true);
         }
       } catch (err) {
         console.error(`Failed to play scene ${sceneIdx + 1}:`, err);
         setLoadingSceneIndex(null);
       }
     },
-    [selectedVoice, voiceVolume, onAudioStopped, stopBrowserSpeech, synthesizeSceneAudio]
+    [selectedVoice, voiceVolume, stopBrowserSpeech, synthesizeSceneAudio]
   );
 
-  // Initialize HTML5 Audio Element & auto-advance to next scene
+  useEffect(() => {
+    playSceneAtIndexRef.current = playSceneAtIndex;
+  }, [playSceneAtIndex]);
+
+  // Initialize HTML5 Audio Element ONCE on mount (never destroyed on re-render!)
   useEffect(() => {
     const audio = new Audio();
     audio.preload = 'auto';
@@ -350,13 +394,15 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
       const nextSceneIdx = activeParaRef.current + 1;
 
       if (nextSceneIdx < totalScenes) {
-        playSceneAtIndex(nextSceneIdx);
+        if (playSceneAtIndexRef.current) {
+          playSceneAtIndexRef.current(nextSceneIdx);
+        }
       } else {
         setIsPlaying(false);
         setCurrentTime(0);
         setActiveParagraphIndex(0);
         ambientAudio.stop();
-        if (onAudioStopped) onAudioStopped();
+        if (onAudioStoppedRef.current) onAudioStoppedRef.current();
       }
     };
     const onTimeUpdate = () => {
@@ -378,7 +424,6 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
     audio.addEventListener('loadedmetadata', onLoadedMetadata);
 
     return () => {
-      stopBrowserSpeech();
       audio.removeEventListener('play', onPlay);
       audio.removeEventListener('pause', onPause);
       audio.removeEventListener('ended', onEnded);
@@ -387,7 +432,7 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
       audio.pause();
       audio.src = '';
     };
-  }, [onAudioStopped, playSceneAtIndex, stopBrowserSpeech]);
+  }, []);
 
   // Update voice volume
   useEffect(() => {
@@ -418,17 +463,31 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
   };
 
   /**
-   * Quota-Safe Progressive Generation & Instant First-Minute Playback:
-   * - Synthesizes Scene 1 immediately.
-   * - Spaces out background scene pre-fetching by 4.5s per scene so RPM limits are never burst!
+   * Progressive Generation & Instant Scene 1 Playback (Gemini 3.8 Flash + Gemini 3.8 Flash TTS)
    */
   const handleGenerateAndPlay = useCallback(async () => {
     const currentRunId = ++runIdRef.current;
     stopBrowserSpeech();
+
+    // Unlock HTMLAudioElement synchronously inside user click gesture!
+    if (audioElementRef.current) {
+      try {
+        audioElementRef.current.src = SILENT_UNLOCK_WAV;
+        audioElementRef.current
+          .play()
+          .then(() => {
+            if (audioElementRef.current && audioElementRef.current.src === SILENT_UNLOCK_WAV) {
+              audioElementRef.current.pause();
+            }
+          })
+          .catch(() => {});
+      } catch {}
+    }
+
     setIsGenerating(true);
     setErrorMessage(null);
     setUsingQuotaSafeVoice(false);
-    setProgressPercent(10);
+    setProgressPercent(12);
     setGenerationStep(storyMode === 'real' ? 'searching' : 'writing');
 
     sceneAudioUrlsRef.current = {};
@@ -438,17 +497,15 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
     setActiveParagraphIndex(0);
     activeParaRef.current = 0;
 
-    if (audioElementRef.current) {
-      audioElementRef.current.pause();
-    }
-    if (onAudioStarted) {
-      onAudioStarted();
+    if (onAudioStartedRef.current) {
+      onAudioStartedRef.current();
     }
 
     try {
-      const defaultPrompt =
-        storyMode === 'real' ? QUICK_REAL_STORY_SPARKS[0] : QUICK_GENERATE_SPARKS[0];
-      const activePrompt = customPrompt.trim() || defaultPrompt;
+      const previousTitles = [
+        storyDataRef.current?.title,
+        ...storyHistory.map((h) => h.story?.title),
+      ].filter(Boolean);
 
       // STEP 1: Generate Story or Search Web
       const storyRes = await fetch('/api/story/generate', {
@@ -457,9 +514,10 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
         body: JSON.stringify({
           storyMode,
           mood: storyMode === 'real' ? 'Real Web Story' : 'SoulWriter Original',
-          prompt: activePrompt,
+          prompt: customPrompt.trim(),
           voiceGender,
           storyLanguage,
+          excludeTitles: previousTitles,
         }),
       });
 
@@ -478,9 +536,9 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
 
       setStoryData(generatedStory);
       storyDataRef.current = generatedStory;
-      setProgressPercent(65);
+      setProgressPercent(68);
 
-      // STEP 2: Synthesize Scene 1 (First ~1 minute) for instant playback!
+      // STEP 2: Synthesize Scene 1 via Gemini 3.8 Flash TTS for instant playback
       setGenerationStep('synthesizing_first');
 
       await synthesizeSceneAudio(0, paragraphs[0], selectedVoice, currentRunId);
@@ -488,13 +546,14 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
       if (runIdRef.current !== currentRunId) return;
       setProgressPercent(100);
 
-      // Exit loading screen and start playing Scene 1 right away!
+      // Exit loading screen and start playing Scene 1 immediately!
       setIsGenerating(false);
       setGenerationStep('');
-      playSceneAtIndex(0);
+      await playSceneAtIndex(0);
 
       // Save to session history
-      const voiceObj = NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
+      const voiceObj =
+        NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
       setStoryHistory((prev) => [
         {
           id: Date.now(),
@@ -507,31 +566,14 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
         ...prev.slice(0, 5),
       ]);
 
-      // STEP 3: Rate-Limit-Safe Background Pre-Fetching (4.5s spacing between scenes to protect RPM quota!)
-      if (paragraphs.length > 1) {
-        setIsBufferingBackground(true);
-        (async () => {
-          for (let i = 1; i < paragraphs.length; i++) {
-            if (runIdRef.current !== currentRunId) break;
-            // Wait 4.2s before fetching the next scene in background to avoid 429 RPM bursts
-            await new Promise((r) => setTimeout(r, 4200));
-            if (runIdRef.current !== currentRunId) break;
-            try {
-              await synthesizeSceneAudio(i, paragraphs[i], selectedVoice, currentRunId);
-            } catch {}
-          }
-          if (runIdRef.current === currentRunId) {
-            setIsBufferingBackground(false);
-          }
-        })();
-      }
+      // Next scenes are pre-fetched automatically via 1-scene lookahead during playback to conserve daily TTS quota
     } catch (err) {
       console.error('Story studio execution failed:', err);
       if (runIdRef.current === currentRunId) {
         setErrorMessage(err.message || 'An error occurred while preparing your story.');
         setIsGenerating(false);
         setGenerationStep('');
-        if (onAudioStopped) onAudioStopped();
+        if (onAudioStoppedRef.current) onAudioStoppedRef.current();
       }
     }
   }, [
@@ -540,8 +582,6 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
     customPrompt,
     voiceGender,
     selectedVoice,
-    onAudioStarted,
-    onAudioStopped,
     stopBrowserSpeech,
     synthesizeSceneAudio,
     playSceneAtIndex,
@@ -560,15 +600,19 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
       setActiveParagraphIndex(0);
       activeParaRef.current = 0;
 
-      if (onAudioStarted) onAudioStarted();
+      if (onAudioStartedRef.current) onAudioStartedRef.current();
       playSceneAtIndex(0);
     },
-    [onAudioStarted, playSceneAtIndex, stopBrowserSpeech]
+    [playSceneAtIndex, stopBrowserSpeech]
   );
 
   const togglePlay = useCallback(() => {
     const currentMode = sceneAudioUrlsRef.current[activeParaRef.current];
-    if (currentMode === 'BROWSER_TTS' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    if (
+      currentMode === 'BROWSER_TTS' &&
+      typeof window !== 'undefined' &&
+      'speechSynthesis' in window
+    ) {
       if (isPlaying) {
         window.speechSynthesis.pause();
         setIsPlaying(false);
@@ -583,17 +627,26 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
       return;
     }
 
-    if (!audioElementRef.current || !audioElementRef.current.src) return;
+    if (!audioElementRef.current || !audioElementRef.current.src) {
+      playSceneAtIndex(activeParaRef.current);
+      return;
+    }
     if (isPlaying) {
       audioElementRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioElementRef.current.play().then(() => setIsPlaying(true)).catch(() => {});
+      audioElementRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {});
     }
   }, [isPlaying, playSceneAtIndex]);
 
   const seekTo = useCallback((seconds) => {
-    if (!audioElementRef.current || sceneAudioUrlsRef.current[activeParaRef.current] === 'BROWSER_TTS') {
+    if (
+      !audioElementRef.current ||
+      sceneAudioUrlsRef.current[activeParaRef.current] === 'BROWSER_TTS'
+    ) {
       return;
     }
     audioElementRef.current.currentTime = seconds;
@@ -610,8 +663,8 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
     setIsBufferingBackground(false);
     ambientAudio.stop();
     setIsPlaying(false);
-    if (onAudioStopped) onAudioStopped();
-  }, [onAudioStopped, stopBrowserSpeech]);
+    if (onAudioStoppedRef.current) onAudioStoppedRef.current();
+  }, [stopBrowserSpeech]);
 
   return {
     storyMode,

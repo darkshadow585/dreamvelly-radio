@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Search, Play, Shuffle } from 'lucide-react';
+import { X, Search, Play, Shuffle, Heart } from 'lucide-react';
 import { PLAYLISTS } from '../data/playlists';
 
 export default function PlaylistModal({
@@ -12,8 +12,11 @@ export default function PlaylistModal({
   activePlaylistSongs,
   isPlaying,
   onToggleShuffle,
+  likedSongIds = [],
+  onToggleLike,
 }) {
   const [filterText, setFilterText] = useState('');
+  const [onlyLiked, setOnlyLiked] = useState(false);
 
   if (!isOpen) return null;
 
@@ -21,6 +24,7 @@ export default function PlaylistModal({
     PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
   const playlistSongs = activePlaylistSongs || currentPlaylist.songs;
   const filteredSongs = playlistSongs.filter((s) => {
+    if (onlyLiked && !likedSongIds.includes(s.id)) return false;
     if (!filterText.trim()) return true;
     const q = filterText.toLowerCase();
     return (
@@ -116,9 +120,9 @@ export default function PlaylistModal({
           })}
         </div>
 
-        {/* 3. INSTANT TRACK FILTER */}
-        <div className="px-4 sm:px-6 pt-3 pb-2 bg-[#0b0a09]">
-          <div className="relative flex items-center">
+        {/* 3. INSTANT TRACK FILTER & LIKED COLLECTION TOGGLE */}
+        <div className="px-4 sm:px-6 pt-3 pb-2 bg-[#0b0a09] flex items-center gap-2">
+          <div className="relative flex-1 flex items-center">
             <Search
               size={14}
               className="absolute left-3.5 text-[#9E968B] pointer-events-none"
@@ -141,86 +145,126 @@ export default function PlaylistModal({
               </button>
             )}
           </div>
+
+          <button
+            onClick={() => setOnlyLiked((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-xs font-medium transition cursor-pointer flex-shrink-0 ${
+              onlyLiked
+                ? 'bg-[#1a1612] border-[#D4A359]/60 text-[#D4A359]'
+                : 'bg-[#141210] border-white/[0.08] text-[#9E968B] hover:text-[#F4EFE8]'
+            }`}
+            title="Show only Liked Tracks"
+          >
+            <Heart size={13} fill={onlyLiked ? 'currentColor' : 'none'} />
+            <span>Liked</span>
+          </button>
         </div>
 
         {/* 4. EDITORIAL TRACKLIST */}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-2 space-y-1 no-scrollbar">
-          {filteredSongs.map((song, index) => {
-            const isCurrent = song.id === currentSongId;
-            return (
-              <div
-                key={`${song.id}-${index}`}
-                onClick={() => {
-                  onSelectSongById(song.id);
-                  onClose();
-                }}
-                className={`flex items-center gap-3.5 p-2.5 rounded-xl cursor-pointer transition-all group ${
-                  isCurrent
-                    ? 'bg-[#1a1612] border border-[#D4A359]/40 text-[#F4EFE8]'
-                    : 'hover:bg-white/[0.04] text-[#EAE5DF]/85 border border-transparent'
-                }`}
-              >
-                {/* Index or Live Equalizer */}
-                <div className="w-6 flex items-center justify-center text-xs font-mono-tabular text-[#8C857B]">
-                  {isCurrent && isPlaying ? (
-                    <div className="flex items-end gap-[2px] h-3">
-                      {[0.4, 1, 0.6].map((h, i) => (
-                        <span
-                          key={i}
-                          className="w-[2px] bg-[#D4A359] rounded-full animate-studio-wave"
-                          style={{
-                            height: `${Math.round(h * 100)}%`,
-                            animationDelay: `${i * 0.14}s`,
-                          }}
-                        />
-                      ))}
-                    </div>
-                  ) : isCurrent ? (
-                    <Play size={12} className="text-[#D4A359]" fill="currentColor" />
-                  ) : (
-                    <span>{index + 1 < 10 ? `0${index + 1}` : index + 1}</span>
-                  )}
-                </div>
-
-                {/* Sleeve Thumbnail */}
-                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-black/50 border border-white/10">
-                  <img
-                    src={song.cover}
-                    alt={song.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                </div>
-
-                {/* Title & Unboxed Metadata */}
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={`text-sm truncate ${
-                      isCurrent
-                        ? 'text-[#D4A359] font-semibold'
-                        : 'text-[#F4EFE8] font-medium'
-                    }`}
-                  >
-                    {song.title}
-                  </p>
-                  <div className="flex items-center gap-1.5 text-xs text-[#9E968B] truncate mt-0.5">
-                    <span className="truncate">{song.artist}</span>
-                    {song.movie && (
-                      <>
-                        <span aria-hidden="true">·</span>
-                        <span className="truncate text-[#8C857B]">{song.movie}</span>
-                      </>
+          {filteredSongs.length === 0 ? (
+            <div className="py-12 text-center text-xs text-[#8C857B]">
+              {onlyLiked
+                ? 'No liked tracks in this station yet. Click the heart icon on any track to save it.'
+                : 'No tracks match your filter.'}
+            </div>
+          ) : (
+            filteredSongs.map((song, index) => {
+              const isCurrent = song.id === currentSongId;
+              const isLiked = likedSongIds.includes(song.id);
+              return (
+                <div
+                  key={`${song.id}-${index}`}
+                  onClick={() => {
+                    onSelectSongById(song.id);
+                    onClose();
+                  }}
+                  className={`flex items-center gap-3.5 p-2.5 rounded-xl cursor-pointer transition-all group ${
+                    isCurrent
+                      ? 'bg-[#1a1612] border border-[#D4A359]/40 text-[#F4EFE8]'
+                      : 'hover:bg-white/[0.04] text-[#EAE5DF]/85 border border-transparent'
+                  }`}
+                >
+                  {/* Index or Live Equalizer */}
+                  <div className="w-6 flex items-center justify-center text-xs font-mono-tabular text-[#8C857B]">
+                    {isCurrent && isPlaying ? (
+                      <div className="flex items-end gap-[2px] h-3">
+                        {[0.4, 1, 0.6].map((h, i) => (
+                          <span
+                            key={i}
+                            className="w-[2px] bg-[#D4A359] rounded-full animate-studio-wave"
+                            style={{
+                              height: `${Math.round(h * 100)}%`,
+                              animationDelay: `${i * 0.14}s`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ) : isCurrent ? (
+                      <Play size={12} className="text-[#D4A359]" fill="currentColor" />
+                    ) : (
+                      <span>{index + 1 < 10 ? `0${index + 1}` : index + 1}</span>
                     )}
                   </div>
-                </div>
 
-                {/* Duration */}
-                <div className="text-xs text-[#8C857B] font-mono-tabular pr-1">
-                  {song.duration}
+                  {/* Sleeve Thumbnail */}
+                  <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-black/50 border border-white/10">
+                    <img
+                      src={song.cover}
+                      alt={song.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                  </div>
+
+                  {/* Title & Unboxed Metadata */}
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`text-sm truncate ${
+                        isCurrent
+                          ? 'text-[#D4A359] font-semibold'
+                          : 'text-[#F4EFE8] font-medium'
+                      }`}
+                    >
+                      {song.title}
+                    </p>
+                    <div className="flex items-center gap-1.5 text-xs text-[#9E968B] truncate mt-0.5">
+                      <span className="truncate">{song.artist}</span>
+                      {song.movie && (
+                        <>
+                          <span aria-hidden="true">·</span>
+                          <span className="truncate text-[#8C857B]">{song.movie}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Like Button & Duration */}
+                  <div className="flex items-center gap-2.5 pr-1">
+                    {onToggleLike && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onToggleLike(song.id);
+                        }}
+                        className={`p-1.5 rounded-full transition cursor-pointer ${
+                          isLiked
+                            ? 'text-[#D4A359]'
+                            : 'text-white/25 hover:text-white/75'
+                        }`}
+                        title={isLiked ? 'Remove from Liked' : 'Save to Liked'}
+                      >
+                        <Heart size={13} fill={isLiked ? 'currentColor' : 'none'} />
+                      </button>
+                    )}
+                    <span className="text-xs text-[#8C857B] font-mono-tabular">
+                      {song.duration}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
       </div>
     </div>

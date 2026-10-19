@@ -16,6 +16,8 @@ import {
   SkipForward,
   SkipBack,
   Feather,
+  Check,
+  Loader2,
 } from 'lucide-react';
 import {
   QUICK_GENERATE_SPARKS,
@@ -27,6 +29,33 @@ import {
 
 const ROMAN_NUMERALS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
+const PAPER_THEMES = {
+  obsidian: {
+    id: 'obsidian',
+    label: 'Obsidian',
+    bg: 'bg-[#0a0908]',
+    textActive: 'text-[#F7F3EE]',
+    textIdle: 'text-[#8C857B]/75 hover:text-[#EAE5DF]/90',
+    textPast: 'text-[#8C857B]/55 hover:text-[#EAE5DF]/80',
+  },
+  sepia: {
+    id: 'sepia',
+    label: 'Parchment',
+    bg: 'bg-[#14110d]',
+    textActive: 'text-[#F5EBD6]',
+    textIdle: 'text-[#B5A68E]/80 hover:text-[#F5EBD6]/90',
+    textPast: 'text-[#B5A68E]/55 hover:text-[#F5EBD6]/80',
+  },
+  midnight: {
+    id: 'midnight',
+    label: 'Midnight',
+    bg: 'bg-[#07090e]',
+    textActive: 'text-[#EEF2F7]',
+    textIdle: 'text-[#8492A6]/75 hover:text-[#EEF2F7]/90',
+    textPast: 'text-[#8492A6]/55 hover:text-[#EEF2F7]/80',
+  },
+};
+
 export default function StoryStudioModal({
   isOpen,
   onClose,
@@ -35,6 +64,8 @@ export default function StoryStudioModal({
 }) {
   const [activeTab, setActiveTab] = useState('creator'); // 'creator' | 'reader'
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [paperTheme, setPaperTheme] = useState('obsidian');
+  const [fontScale, setFontScale] = useState('normal'); // 'normal' | 'large'
   const activeParagraphRef = useRef(null);
 
   const {
@@ -47,10 +78,16 @@ export default function StoryStudioModal({
     selectedVoice,
     setVoice,
     isGenerating,
+    generationStep,
     progressPercent,
+    elapsedSeconds,
+    currentTelemetry,
     storyData,
     storyHistory,
     loadHistoryStory,
+    bufferedScenes,
+    isBufferingBackground,
+    loadingSceneIndex,
     playSceneAtIndex,
     errorMessage,
     isPlaying,
@@ -75,8 +112,12 @@ export default function StoryStudioModal({
   });
 
   const totalScenes = storyData?.paragraphs?.length || 0;
+  const bufferedCount = Object.keys(bufferedScenes || {}).length;
   const quickSparks =
     storyMode === 'real' ? QUICK_REAL_STORY_SPARKS : QUICK_GENERATE_SPARKS;
+  const activePaper = PAPER_THEMES[paperTheme] || PAPER_THEMES.obsidian;
+  const currentVoiceMeta =
+    NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
 
   // Switch to reader automatically when playback starts
   useEffect(() => {
@@ -123,8 +164,16 @@ export default function StoryStudioModal({
 
   if (!isOpen) return null;
 
+  // SVG progress circle calculation
+  const circleRadius = 72;
+  const circleCircumference = 2 * Math.PI * circleRadius;
+  const strokeDashoffset =
+    circleCircumference - (progressPercent / 100) * circleCircumference;
+
   return (
-    <div className="fixed inset-0 z-50 bg-[#0a0908] text-[#EAE5DF] flex flex-col justify-between overflow-hidden animate-in fade-in duration-300 font-ui selection:bg-[#D4A359]/30">
+    <div
+      className={`fixed inset-0 z-50 ${activePaper.bg} text-[#EAE5DF] flex flex-col justify-between overflow-hidden animate-in fade-in duration-300 font-ui selection:bg-[#D4A359]/30 transition-colors duration-500`}
+    >
       {/* Warm Brass Desk Lamp Radial Illumination */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
         <div
@@ -150,7 +199,7 @@ export default function StoryStudioModal({
 
       {/* ================= 1. MINIMALIST WRITER'S DESK HEADER ================= */}
       {!isFocusMode && (
-        <header className="relative z-20 flex items-center justify-between px-6 sm:px-14 py-5 border-b border-white/[0.06] bg-[#0a0908]/85 backdrop-blur-xl transition-opacity duration-300">
+        <header className="relative z-20 flex items-center justify-between px-6 sm:px-14 py-5 border-b border-white/[0.06] bg-black/25 backdrop-blur-xl transition-opacity duration-300">
           {/* Left: Minimal Brand Mark */}
           <div className="flex items-center gap-2.5">
             <Feather size={14} className="text-[#D4A359]" />
@@ -185,17 +234,45 @@ export default function StoryStudioModal({
             </div>
           )}
 
-          {/* Right: Focus Mode Toggle & Close */}
-          <div className="flex items-center gap-3">
+          {/* Right: Paper Theme, Typography Scale, Focus Mode & Close */}
+          <div className="flex items-center gap-2.5">
             {!isGenerating && activeTab === 'reader' && storyData && (
-              <button
-                onClick={() => setIsFocusMode(true)}
-                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs text-[#C7C0B6] hover:text-white transition cursor-pointer"
-                title="Hide all UI elements except the unfolding story text (Shortcut: F)"
-              >
-                <Eye size={13} className="text-[#D4A359]" />
-                <span>Focus Mode</span>
-              </button>
+              <>
+                <div className="hidden md:flex items-center gap-1 p-1 rounded-full bg-white/[0.03] border border-white/[0.07]">
+                  {Object.values(PAPER_THEMES).map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => setPaperTheme(t.id)}
+                      className={`px-2.5 py-1 rounded-full text-[11px] transition cursor-pointer ${
+                        paperTheme === t.id
+                          ? 'bg-[#EAE5DF] text-[#0a0908] font-medium'
+                          : 'text-[#8C857B] hover:text-[#EAE5DF]'
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() =>
+                    setFontScale((prev) => (prev === 'normal' ? 'large' : 'normal'))
+                  }
+                  className="hidden sm:flex items-center justify-center px-2.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs font-editorial text-[#C7C0B6] hover:text-white transition cursor-pointer"
+                  title="Toggle Typeface Scale"
+                >
+                  {fontScale === 'normal' ? 'Aa+' : 'Aa-'}
+                </button>
+
+                <button
+                  onClick={() => setIsFocusMode(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-xs text-[#C7C0B6] hover:text-white transition cursor-pointer"
+                  title="Hide all UI elements except the unfolding story text (Shortcut: F)"
+                >
+                  <Eye size={13} className="text-[#D4A359]" />
+                  <span>Focus Mode</span>
+                </button>
+              </>
             )}
 
             <button
@@ -219,67 +296,178 @@ export default function StoryStudioModal({
         )}
 
         {/* =====================================================================
-            STATE A: MINIMALIST LITERARY INK & SOUND PREPARATION
+            STATE A: LEVEL 5 CINEMATIC NEURAL ACOUSTIC & STORY FORGE ANIMATION
            ===================================================================== */}
         {isGenerating ? (
-          <div className="max-w-xl mx-auto min-h-[72vh] flex flex-col items-center justify-center text-center py-16 space-y-10 animate-in fade-in duration-500">
-            <div className="relative w-32 h-32 flex items-center justify-center">
+          <div className="max-w-2xl mx-auto min-h-[78vh] flex flex-col items-center justify-center py-10 space-y-8 animate-in fade-in duration-500">
+            {/* 1. Triple-Ring 3D Orbital Acoustic Sphere */}
+            <div className="relative w-44 h-44 flex items-center justify-center">
+              {/* Ambient Pulsing Aura */}
+              <div className="absolute -inset-4 rounded-full bg-[#D4A359]/15 blur-2xl animate-pulse-halo pointer-events-none" />
+
+              {/* Outer Dashed Orbital Ring */}
               <svg
                 className="absolute inset-0 w-full h-full animate-vinyl"
-                viewBox="0 0 140 140"
+                viewBox="0 0 176 176"
               >
                 <circle
-                  cx="70"
-                  cy="70"
+                  cx="88"
+                  cy="88"
+                  r="82"
+                  fill="none"
+                  stroke="rgba(212,163,89,0.25)"
+                  strokeWidth="1"
+                  strokeDasharray="12 18"
+                />
+                <circle cx="88" cy="6" r="3" fill="#D4A359" />
+                <circle cx="88" cy="170" r="2" fill="#EAE5DF" />
+              </svg>
+
+              {/* Middle Counter-Rotating Harmonic Ring */}
+              <svg
+                className="absolute inset-2 w-40 h-40 animate-vinyl-reverse"
+                viewBox="0 0 160 160"
+              >
+                <circle
+                  cx="80"
+                  cy="80"
                   r="64"
                   fill="none"
-                  stroke="rgba(212,163,89,0.4)"
+                  stroke="rgba(234,229,223,0.12)"
                   strokeWidth="1"
-                  strokeDasharray="90 50"
+                  strokeDasharray="40 20"
                 />
               </svg>
+
+              {/* Precision Progress Ring */}
               <svg
-                className="absolute inset-3 w-[116px] h-[116px] animate-vinyl-reverse"
-                viewBox="0 0 116 116"
+                className="absolute inset-0 w-full h-full -rotate-90"
+                viewBox="0 0 176 176"
               >
                 <circle
-                  cx="58"
-                  cy="58"
-                  r="52"
+                  cx="88"
+                  cy="88"
+                  r={circleRadius}
                   fill="none"
-                  stroke="rgba(234,229,223,0.14)"
-                  strokeWidth="1"
-                  strokeDasharray="4 8"
+                  stroke="rgba(255,255,255,0.06)"
+                  strokeWidth="2.5"
+                />
+                <circle
+                  cx="88"
+                  cy="88"
+                  r={circleRadius}
+                  fill="none"
+                  stroke="#D4A359"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeDasharray={circleCircumference}
+                  strokeDashoffset={strokeDashoffset}
+                  style={{ transition: 'stroke-dashoffset 0.35s ease-out' }}
                 />
               </svg>
-              <span className="text-xl font-editorial text-[#D4A359] tracking-widest">
-                {progressPercent}%
-              </span>
+
+              {/* Center Percentage & Elapsed Studio Clock */}
+              <div className="relative z-10 flex flex-col items-center justify-center text-center">
+                <span className="text-3xl font-editorial font-semibold text-[#F4EFE8] tracking-tight tabular-nums">
+                  {progressPercent}%
+                </span>
+                <span className="text-[10px] font-mono-tabular uppercase tracking-[0.22em] text-[#D4A359] mt-0.5">
+                  00:{elapsedSeconds < 10 ? `0${elapsedSeconds}` : elapsedSeconds}
+                </span>
+              </div>
             </div>
 
-            <div className="space-y-3 max-w-md">
-              <h3 className="text-2xl sm:text-3xl font-editorial text-[#EAE5DF] font-normal tracking-wide">
-                {storyData ? storyData.title : 'Composing the manuscript...'}
-              </h3>
-              <p className="text-sm sm:text-base text-[#8C857B] leading-relaxed font-editorial italic">
-                {storyData?.synopsis
-                  ? `“${storyData.synopsis}”`
-                  : 'Weaving character subtext, spoken cadence, and acoustic atmosphere.'}
-              </p>
-            </div>
-
-            <div className="flex items-end justify-center gap-1 h-5">
-              {[0.3, 0.7, 0.5, 1, 0.6, 0.85, 0.4, 0.9, 0.5, 0.75, 0.35].map((h, i) => (
+            {/* 2. 28-Bar Live Harmonic Frequency Spectrum */}
+            <div className="flex items-end justify-center gap-[3px] h-8 px-4">
+              {[
+                0.25, 0.5, 0.85, 0.4, 0.95, 0.6, 0.35, 0.8, 1, 0.55, 0.9, 0.45, 0.75, 0.95,
+                0.6, 1, 0.7, 0.4, 0.85, 0.5, 0.9, 0.65, 0.35, 0.8, 0.55, 0.7, 0.4, 0.3,
+              ].map((h, i) => (
                 <span
                   key={i}
-                  className="w-[2px] bg-[#D4A359]/75 rounded-full animate-studio-wave"
+                  className="w-[2.5px] bg-gradient-to-t from-[#D4A359]/40 via-[#D4A359] to-[#F4EFE8] rounded-full animate-studio-wave"
                   style={{
                     height: `${Math.round(h * 100)}%`,
-                    animationDelay: `${i * 0.09}s`,
+                    animationDelay: `${i * 0.06}s`,
                   }}
                 />
               ))}
             </div>
+
+            {/* 3. Live Telemetry Title & Active Phase */}
+            <div className="text-center space-y-2 max-w-lg">
+              <h3 className="text-2xl sm:text-3xl font-editorial text-[#F4EFE8] font-normal tracking-wide">
+                {storyData
+                  ? storyData.title
+                  : storyMode === 'real'
+                  ? 'Researching True Archive & Scripting...'
+                  : 'Crafting Original SoulWriter Narrative...'}
+              </h3>
+              <p className="text-xs sm:text-sm font-mono-tabular text-[#D4A359]/90 tracking-wide">
+                {currentTelemetry}
+              </p>
+            </div>
+
+            {/* 4. Level 5 3-Stage Pipeline Telemetry Grid */}
+            <div className="w-full max-w-xl grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {[
+                {
+                  id: 'step1',
+                  title: storyMode === 'real' ? 'Web Archive' : 'Plot & Subtext',
+                  sub: '5-Scene Literary Arc',
+                  done: progressPercent >= 65,
+                  active: progressPercent < 65,
+                },
+                {
+                  id: 'step2',
+                  title: 'Voice Synthesis',
+                  sub: `${currentVoiceMeta.persona} · Scene 1 Stream`,
+                  done: progressPercent >= 98,
+                  active: progressPercent >= 65 && progressPercent < 98,
+                },
+                {
+                  id: 'step3',
+                  title: 'Background Buffer',
+                  sub: 'Auto-Queue Scenes 2–5',
+                  done: progressPercent >= 100,
+                  active: progressPercent >= 90,
+                },
+              ].map((st) => (
+                <div
+                  key={st.id}
+                  className={`p-3.5 rounded-2xl border transition-all ${
+                    st.done
+                      ? 'bg-[#171410] border-[#D4A359]/50 text-[#F4EFE8]'
+                      : st.active
+                      ? 'bg-[#141210] border-white/20 text-[#EAE5DF]'
+                      : 'bg-[#0e0d0b] border-white/[0.05] text-[#8C857B]/60'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold">{st.title}</span>
+                    {st.done ? (
+                      <Check size={13} className="text-[#D4A359]" />
+                    ) : st.active ? (
+                      <Loader2 size={13} className="text-[#D4A359] animate-spin" />
+                    ) : null}
+                  </div>
+                  <div className="text-[11px] text-[#8C857B] truncate">{st.sub}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* 5. Instant Unfolding Manuscript Preview Card while Scene 1 Audio Synthesizes */}
+            {storyData && (
+              <div className="w-full max-w-xl p-5 rounded-2xl bg-[#12100e] border border-[#D4A359]/35 shadow-2xl space-y-2 animate-in fade-in duration-300">
+                <div className="flex items-center justify-between text-[10px] font-mono-tabular uppercase tracking-[0.2em] text-[#D4A359]">
+                  <span>Manuscript Ready · Preparing Voice Stream</span>
+                  <span>{storyData.paragraphs?.length || 5} Scenes</span>
+                </div>
+                <p className="text-sm sm:text-base font-editorial italic text-[#EAE5DF]/90 line-clamp-2">
+                  “{storyData.paragraphs?.[0]?.text}”
+                </p>
+              </div>
+            )}
           </div>
         ) : activeTab === 'creator' ? (
           /* =====================================================================
@@ -337,10 +525,10 @@ export default function StoryStudioModal({
                   rows={4}
                   placeholder={
                     storyMode === 'real'
-                      ? 'Enter a real historical incident, biography, or true mystery (e.g., Dashrath Manjhi, Kuldhara village, Flight 73)...'
-                      : 'Begin with a character, an unspoken secret, or a quiet setting...'
+                      ? 'किसी सच्ची घटना या रहस्य का नाम लिखें (जैसे: दशरथ मांझी, कुलधरा गाँव का रहस्य, नीरजा भनोट)...'
+                      : 'कहानी का कोई छोटा सा आइडिया या सीन लिखें (या खाली छोड़ दें, नया विषय खुद चुन लिया जाएगा)...'
                   }
-                  className="w-full bg-transparent text-lg sm:text-xl font-editorial text-[#F4EFE8] placeholder-[#8C857B]/50 outline-none resize-none leading-relaxed"
+                  className="w-full bg-transparent text-lg sm:text-xl font-editorial text-[#F4EFE8] placeholder-[#8C857B]/50 outline-none resize-none leading-relaxed hindi-serif"
                 />
 
                 {/* Bottom Bar Inside Sheet: Language & Clear */}
@@ -376,14 +564,14 @@ export default function StoryStudioModal({
               {/* Subtle Literary Prompts */}
               <div className="space-y-2.5 pt-1">
                 <span className="text-[11px] uppercase tracking-[0.2em] text-[#8C857B]/75 block">
-                  Story Seeds
+                  Story Seeds (Click to Fill)
                 </span>
                 <div className="flex flex-wrap gap-2">
                   {quickSparks.map((spark, i) => (
                     <button
                       key={i}
                       onClick={() => setCustomPrompt(spark)}
-                      className="text-left text-xs sm:text-sm font-editorial italic px-3.5 py-2 rounded-xl bg-[#12100e] hover:bg-white/[0.05] border border-white/[0.06] text-[#B8B0A4] hover:text-[#EAE5DF] transition cursor-pointer"
+                      className="text-left text-xs sm:text-sm font-editorial italic px-3.5 py-2 rounded-xl bg-[#12100e] hover:bg-white/[0.05] border border-white/[0.06] text-[#B8B0A4] hover:text-[#EAE5DF] transition cursor-pointer hindi-serif"
                     >
                       “{spark}”
                     </button>
@@ -528,14 +716,27 @@ export default function StoryStudioModal({
               </h1>
 
               {storyData?.synopsis && (
-                <p className="text-base sm:text-lg font-editorial italic text-[#9E968B] max-w-lg mx-auto leading-relaxed">
+                <p className="text-base sm:text-lg font-editorial italic text-[#9E968B] max-w-lg mx-auto leading-relaxed hindi-serif">
                   {storyData.synopsis}
                 </p>
               )}
 
+              {/* Subtle Background Audio Buffer Status (Hidden in Focus Mode) */}
+              {!isFocusMode && totalScenes > 0 && (
+                <div className="flex items-center justify-center gap-2 text-[11px] font-mono-tabular text-[#8C857B]">
+                  <span>Narrated by {currentVoiceMeta.persona}</span>
+                  <span>·</span>
+                  <span>
+                    {isBufferingBackground
+                      ? `Buffering scenes (${bufferedCount}/${totalScenes} ready)`
+                      : `All ${totalScenes} scenes ready`}
+                  </span>
+                </div>
+              )}
+
               {/* Subtle Web Archive Citations (Hidden in Focus Mode) */}
               {!isFocusMode && storyData?.sources?.length > 0 && (
-                <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
                   {storyData.sources.map((src, i) => (
                     <a
                       key={i}
@@ -557,6 +758,7 @@ export default function StoryStudioModal({
               {(storyData?.paragraphs || []).map((para, idx) => {
                 const isActive = activeParagraphIndex === idx;
                 const isPast = activeParagraphIndex > idx;
+                const isSceneLoading = loadingSceneIndex === idx;
 
                 return (
                   <div
@@ -583,18 +785,25 @@ export default function StoryStudioModal({
                             </span>
                           </>
                         )}
+                        {isSceneLoading && (
+                          <Loader2 size={12} className="text-[#D4A359] animate-spin" />
+                        )}
                       </div>
                     )}
 
                     <p
-                      className={`text-xl sm:text-2xl leading-[2.05] hindi-serif transition-all duration-500 ${
+                      className={`${
+                        fontScale === 'large'
+                          ? 'text-2xl sm:text-3xl leading-[2.1]'
+                          : 'text-xl sm:text-2xl leading-[2.05]'
+                      } hindi-serif transition-all duration-500 ${
                         idx === 0 && !isActive ? 'story-dropcap' : ''
                       } ${
                         isActive
-                          ? 'text-[#F7F3EE]'
+                          ? activePaper.textActive
                           : isPast
-                          ? 'text-[#8C857B]/55 group-hover:text-[#EAE5DF]/80'
-                          : 'text-[#8C857B]/75 group-hover:text-[#EAE5DF]/90'
+                          ? activePaper.textPast
+                          : activePaper.textIdle
                       }`}
                     >
                       {isActive && isPlaying ? (
@@ -613,7 +822,7 @@ export default function StoryStudioModal({
 
       {/* ================= 3. MINIMALIST FLOATING AUDIO BAR (HIDDEN IN FOCUS MODE) ================= */}
       {!isFocusMode && storyData && !isGenerating && (
-        <div className="fixed bottom-0 inset-x-0 z-30 p-4 sm:p-6 bg-gradient-to-t from-[#0a0908] via-[#0a0908]/95 to-transparent pointer-events-none">
+        <div className="fixed bottom-0 inset-x-0 z-30 p-4 sm:p-6 bg-gradient-to-t from-black/90 via-black/75 to-transparent pointer-events-none">
           <div className="max-w-xl mx-auto pointer-events-auto rounded-full bg-[#141210]/95 backdrop-blur-2xl border border-white/[0.08] px-5 py-3 shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex items-center justify-between gap-4">
             {/* Transport Controls */}
             <div className="flex items-center gap-2">

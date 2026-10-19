@@ -35,7 +35,7 @@ export default function ShareModal({
           <div className="flex items-center gap-2.5">
             <Share2 size={16} className="text-[#D4A359]" />
             <h3 className="text-base font-semibold tracking-wide text-[#F4EFE8]">
-              Share Vinyl Postcard
+              Share Track Postcard
             </h3>
           </div>
           <button
@@ -47,29 +47,17 @@ export default function ShareModal({
           </button>
         </div>
 
-        {/* Physical Vinyl Postcard Preview */}
-        <div className="relative p-5 rounded-2xl bg-[#12100e] border border-white/[0.08] mb-6 flex items-center gap-6 overflow-hidden shadow-2xl">
-          {/* Sleeve + Peeking Grooved Vinyl LP */}
-          <div className="relative w-20 h-20 flex-shrink-0">
-            <div className="absolute top-1/2 -translate-y-1/2 -right-5 w-18 h-18 rounded-full vinyl-disc-surface flex items-center justify-center animate-vinyl">
-              <div className="w-6 h-6 rounded-full overflow-hidden border border-[#D4A359]/60">
-                <img
-                  src={currentSong?.cover}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-            <div className="relative z-10 w-20 h-20 rounded-xl overflow-hidden border border-white/20 shadow-xl bg-black">
-              <img
-                src={currentSong?.cover}
-                alt={currentSong?.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
+        {/* Clean Artwork Postcard Preview (No Plate) */}
+        <div className="relative p-5 rounded-2xl bg-[#12100e] border border-white/[0.08] mb-6 flex items-center gap-4 overflow-hidden shadow-2xl">
+          <div className="relative z-10 w-20 h-20 rounded-xl overflow-hidden border border-white/20 shadow-xl bg-black flex-shrink-0">
+            <img
+              src={currentSong?.cover}
+              alt={currentSong?.title}
+              className="w-full h-full object-cover"
+            />
           </div>
 
-          <div className="min-w-0 flex-1 pl-2">
+          <div className="min-w-0 flex-1">
             <div className="text-[10px] font-mono-tabular uppercase tracking-[0.2em] text-[#D4A359] mb-1">
               {cleanStation}
             </div>

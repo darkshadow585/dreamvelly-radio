@@ -1,13 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  Play,
-  Pause,
-  Feather,
-  Search,
-  ListMusic,
-} from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 export default function CoverflowCarousel({
   songs,
@@ -16,9 +8,6 @@ export default function CoverflowCarousel({
   onTogglePlay,
   isPlaying,
   activePlaylist,
-  onOpenSearch,
-  onOpenStoryStudio,
-  onOpenPlaylistModal,
 }) {
   const containerRef = useRef(null);
   const wheelCooldownRef = useRef(0);
@@ -28,6 +17,9 @@ export default function CoverflowCarousel({
     typeof window !== 'undefined' ? window.innerWidth : 1200
   );
 
+  // Interactive 3D Cursor Tilt for Center Card
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
+
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -35,7 +27,6 @@ export default function CoverflowCarousel({
   }, []);
 
   const totalSongs = songs.length;
-  const activeSong = songs[activeIndex] || songs[0];
   const line1 = activePlaylist?.titleLine1 || 'DREAMVALLEY';
   const line2 = activePlaylist?.titleLine2 || '2026';
 
@@ -43,10 +34,10 @@ export default function CoverflowCarousel({
   const isMobile = windowWidth < 640;
   const isTablet = windowWidth >= 640 && windowWidth < 1024;
 
-  const cardWidth = isSmallMobile ? 160 : isMobile ? 174 : isTablet ? 198 : 224;
-  const cardHeight = isSmallMobile ? 206 : isMobile ? 222 : isTablet ? 250 : 276;
-  const carouselHeight = isMobile ? '248px' : '300px';
-  const carouselMarginTop = isSmallMobile ? '-12px' : isMobile ? '-16px' : '-56px';
+  const cardWidth = isSmallMobile ? 164 : isMobile ? 178 : isTablet ? 202 : 230;
+  const cardHeight = isSmallMobile ? 210 : isMobile ? 226 : isTablet ? 254 : 284;
+  const carouselHeight = isMobile ? '252px' : '310px';
+  const carouselMarginTop = isSmallMobile ? '-14px' : isMobile ? '-18px' : '-62px';
 
   // Keyboard navigation (Arrow keys)
   useEffect(() => {
@@ -99,6 +90,20 @@ export default function CoverflowCarousel({
     setIsDragging(false);
   };
 
+  const handleCenterMouseMove = (e) => {
+    if (isMobile) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+    const ry = (x - 0.5) * 14;
+    const rx = (0.5 - y) * 14;
+    setTilt({ rx, ry, gx: x * 100, gy: y * 100, active: true });
+  };
+
+  const handleCenterMouseLeave = () => {
+    setTilt({ rx: 0, ry: 0, gx: 50, gy: 50, active: false });
+  };
+
   const handlePrevCard = (e) => {
     e.stopPropagation();
     onSelectSong((activeIndex - 1 + totalSongs) % totalSongs);
@@ -114,27 +119,16 @@ export default function CoverflowCarousel({
       onWheel={handleWheel}
       className="absolute inset-0 flex flex-col items-center justify-start pt-16 sm:pt-14 md:pt-12 select-none overflow-hidden"
     >
-      {/* 1. MONUMENTAL STATION TITLE & UNBOXED KICKER */}
+      {/* 1. MONUMENTAL STATION TITLE (CLEAN, NO EXTRA SUBTITLES) */}
       <div className="flex flex-col items-center justify-center z-[5] pointer-events-none px-4 select-none">
-        <div className="flex items-center gap-2 text-[10px] sm:text-[11px] font-mono-tabular uppercase tracking-[0.26em] text-[#EAE5DF]/60 mb-1">
-          <span>{activePlaylist?.badge || 'Curated Atmosphere'}</span>
-          <span aria-hidden="true">·</span>
-          <span>
-            Track {activeIndex + 1 < 10 ? `0${activeIndex + 1}` : activeIndex + 1} of{' '}
-            {totalSongs}
-          </span>
-        </div>
-
-        <h1
-          className="text-[3.3rem] sm:text-[4.7rem] md:text-[6.2rem] lg:text-[7.4rem] font-bold text-[#F4EFE8] text-center leading-[0.86] uppercase transition-all duration-500 hero-heading"
-        >
+        <h1 className="text-[3.4rem] sm:text-[4.8rem] md:text-[6.4rem] lg:text-[7.6rem] font-bold text-[#F4EFE8] text-center leading-[0.86] uppercase transition-all duration-500 hero-heading">
           {line1}
           <br />
           {line2}
         </h1>
       </div>
 
-      {/* 2. 3D SPATIAL VINYL COVERFLOW STAGE */}
+      {/* 2. 3D SPATIAL COVERFLOW STAGE (PURE, UNCROWDED) */}
       <div
         ref={containerRef}
         onMouseDown={handlePointerDown}
@@ -151,21 +145,21 @@ export default function CoverflowCarousel({
         {/* Left Navigation Arrow (Desktop) */}
         <button
           onClick={handlePrevCard}
-          className="hidden md:flex absolute left-4 lg:left-10 z-40 w-11 h-11 rounded-full glass-dock hover:bg-[#F4EFE8] text-[#F4EFE8]/80 hover:text-[#090807] items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+          className="hidden md:flex absolute left-4 lg:left-10 z-40 w-10 h-10 rounded-full glass-dock hover:bg-[#F4EFE8] text-[#F4EFE8]/80 hover:text-[#090807] items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
           title="Previous Track (←)"
           aria-label="Previous Track"
         >
-          <ChevronLeft size={20} />
+          <ChevronLeft size={19} />
         </button>
 
         {/* Right Navigation Arrow (Desktop) */}
         <button
           onClick={handleNextCard}
-          className="hidden md:flex absolute right-4 lg:right-10 z-40 w-11 h-11 rounded-full glass-dock hover:bg-[#F4EFE8] text-[#F4EFE8]/80 hover:text-[#090807] items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
+          className="hidden md:flex absolute right-4 lg:right-10 z-40 w-10 h-10 rounded-full glass-dock hover:bg-[#F4EFE8] text-[#F4EFE8]/80 hover:text-[#090807] items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer"
           title="Next Track (→)"
           aria-label="Next Track"
         >
-          <ChevronRight size={20} />
+          <ChevronRight size={19} />
         </button>
 
         {songs.map((song, idx) => {
@@ -195,7 +189,7 @@ export default function CoverflowCarousel({
             brightness = 1;
             blurAmount = 0;
           } else if (absOffset === 1) {
-            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 168;
+            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 170;
             translateX = offset * step1;
             scale = isMobile ? 0.84 : 0.87;
             rotateY = offset < 0 ? 14 : -14;
@@ -204,7 +198,7 @@ export default function CoverflowCarousel({
             brightness = 0.74;
             blurAmount = 0;
           } else if (absOffset === 2) {
-            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 168;
+            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 170;
             const step2 = isSmallMobile ? 54 : isMobile ? 64 : isTablet ? 108 : 132;
             translateX = Math.sign(offset) * (step1 + step2);
             scale = isMobile ? 0.68 : 0.74;
@@ -214,7 +208,7 @@ export default function CoverflowCarousel({
             brightness = isMobile ? 0.42 : 0.54;
             blurAmount = isMobile ? 1.2 : 0.6;
           } else {
-            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 168;
+            const step1 = isSmallMobile ? 82 : isMobile ? 90 : isTablet ? 142 : 170;
             const step2 = isSmallMobile ? 54 : isMobile ? 64 : isTablet ? 108 : 132;
             translateX = Math.sign(offset) * (step1 + step2 + (isMobile ? 50 : 105));
             scale = isMobile ? 0.55 : 0.6;
@@ -224,6 +218,9 @@ export default function CoverflowCarousel({
             brightness = 0.3;
             blurAmount = 2;
           }
+
+          const finalRotateX = isCenter && tilt.active ? tilt.rx : 0;
+          const finalRotateY = isCenter && tilt.active ? tilt.ry : rotateY;
 
           return (
             <div
@@ -235,21 +232,25 @@ export default function CoverflowCarousel({
                   onSelectSong(idx);
                 }
               }}
+              onMouseMove={isCenter ? handleCenterMouseMove : undefined}
+              onMouseLeave={isCenter ? handleCenterMouseLeave : undefined}
               style={{
                 width: `${cardWidth}px`,
                 height: `${cardHeight}px`,
-                transform: `translateX(${translateX}px) scale(${scale}) rotateY(${rotateY}deg)`,
+                transform: `translateX(${translateX}px) scale(${scale}) rotateX(${finalRotateX}deg) rotateY(${finalRotateY}deg)`,
                 zIndex,
                 opacity,
                 filter: `brightness(${brightness}) ${
                   blurAmount > 0 ? `blur(${blurAmount}px)` : ''
                 }`,
                 transition:
-                  'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.55s cubic-bezier(0.22, 1, 0.36, 1)',
+                  isCenter && tilt.active
+                    ? 'transform 0.12s ease-out'
+                    : 'transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), filter 0.55s cubic-bezier(0.22, 1, 0.36, 1)',
               }}
               className="absolute cursor-pointer group will-change-transform select-none"
             >
-              {/* 1. Warm Champagne Halo behind Active Center Sleeve */}
+              {/* Warm Champagne Halo behind Active Center Sleeve */}
               {isCenter && (
                 <div
                   className={`absolute -inset-4 rounded-[28px] pointer-events-none transition-all duration-700 -z-20 ${
@@ -260,34 +261,7 @@ export default function CoverflowCarousel({
                 />
               )}
 
-              {/* 2. Authentic Physical Grooved Vinyl LP Peeking Out from Center Sleeve */}
-              {isCenter && (
-                <div
-                  className={`hidden sm:flex absolute top-1/2 -translate-y-1/2 -right-12 w-[176px] h-[176px] md:w-[196px] md:h-[196px] rounded-full vinyl-disc-surface items-center justify-center pointer-events-none -z-10 transition-all duration-700 ${
-                    isPlaying
-                      ? 'translate-x-5 opacity-100 animate-vinyl'
-                      : 'translate-x-0 opacity-65'
-                  }`}
-                >
-                  {/* Concentric Groove Rings */}
-                  <div className="w-[132px] h-[132px] rounded-full border border-white/[0.06] flex items-center justify-center">
-                    <div className="w-[96px] h-[96px] rounded-full border border-white/[0.05] flex items-center justify-center">
-                      {/* Center Vinyl Artwork Label */}
-                      <div className="relative w-14 h-14 rounded-full overflow-hidden border-2 border-[#D4A359]/50 shadow-inner">
-                        <img
-                          src={song.cover}
-                          alt=""
-                          className="w-full h-full object-cover"
-                        />
-                        {/* Spindle Hole */}
-                        <div className="absolute inset-0 m-auto w-2.5 h-2.5 rounded-full bg-[#090807] border border-white/30" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* 3. Main Luxury Vinyl Sleeve Card */}
+              {/* Main Luxury Album Card */}
               <div
                 className={`relative w-full h-full rounded-[20px] overflow-hidden transition-all duration-300 flex flex-col justify-between ${
                   isCenter
@@ -300,6 +274,16 @@ export default function CoverflowCarousel({
                 }`}
               >
                 <div className="w-full h-full bg-[#0e0c0a]/95 backdrop-blur-xl border border-white/[0.08] rounded-[20px] overflow-hidden flex flex-col justify-between relative">
+                  {/* Dynamic 3D Specular Glare Overlay on Center Card */}
+                  {isCenter && tilt.active && (
+                    <div
+                      className="pointer-events-none absolute inset-0 z-30 transition-opacity duration-200"
+                      style={{
+                        background: `radial-gradient(circle at ${tilt.gx}% ${tilt.gy}%, rgba(255,255,255,0.18) 0%, transparent 60%)`,
+                      }}
+                    />
+                  )}
+
                   {/* Top Specular Edge */}
                   <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-white/35 to-transparent z-20 pointer-events-none" />
 
@@ -324,22 +308,6 @@ export default function CoverflowCarousel({
                             <Play size={18} fill="currentColor" className="ml-0.5" />
                           )}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Subtle Acoustic Wave Indicator in Corner of Active Card */}
-                    {isCenter && isPlaying && (
-                      <div className="absolute top-3 right-3 px-2 py-1 rounded-md bg-black/65 backdrop-blur-md border border-white/15 flex items-end gap-[2px] h-5">
-                        {[0.4, 1, 0.55, 0.85].map((h, i) => (
-                          <span
-                            key={i}
-                            className="w-[2px] bg-[#D4A359] rounded-full animate-studio-wave"
-                            style={{
-                              height: `${Math.round(h * 100)}%`,
-                              animationDelay: `${i * 0.14}s`,
-                            }}
-                          />
-                        ))}
                       </div>
                     )}
                   </div>
@@ -367,85 +335,9 @@ export default function CoverflowCarousel({
                   </div>
                 </div>
               </div>
-
-              {/* 4. Subtle Floor Reflection Under Center Card */}
-              {isCenter && (
-                <div
-                  aria-hidden="true"
-                  className="hidden sm:block absolute left-0 right-0 -bottom-10 h-9 rounded-[20px] overflow-hidden pointer-events-none opacity-20 blur-[2px]"
-                  style={{
-                    transform: 'scaleY(-1)',
-                    WebkitMaskImage:
-                      'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 90%)',
-                    maskImage:
-                      'linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 90%)',
-                  }}
-                >
-                  <img
-                    src={song.cover}
-                    alt=""
-                    className="w-full h-full object-cover object-bottom"
-                  />
-                </div>
-              )}
             </div>
           );
         })}
-      </div>
-
-      {/* 3. LEVEL 5 STAGE PLINTH & QUICK STUDIO ACTIONS */}
-      <div className="relative z-20 mt-4 sm:mt-6 flex flex-col items-center gap-2.5 px-4">
-        {/* Unboxed Track Metadata Line */}
-        {activeSong && (
-          <div className="hidden sm:flex items-center gap-2 text-xs text-[#EAE5DF]/70">
-            <span className="font-medium text-[#F4EFE8]">{activeSong.title}</span>
-            <span aria-hidden="true" className="text-white/30">
-              ·
-            </span>
-            <span>{activeSong.artist}</span>
-            {activeSong.movie && (
-              <>
-                <span aria-hidden="true" className="text-white/30">
-                  ·
-                </span>
-                <span className="text-[#A8A096]">{activeSong.movie}</span>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Interactive Studio Action Bar */}
-        <div className="flex flex-wrap items-center justify-center gap-2">
-          {onOpenPlaylistModal && (
-            <button
-              onClick={onOpenPlaylistModal}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full glass-dock hover:border-white/30 text-xs text-[#EAE5DF]/85 hover:text-white transition cursor-pointer"
-            >
-              <ListMusic size={12} className="text-[#D4A359]" />
-              <span>Station Queue ({totalSongs})</span>
-            </button>
-          )}
-
-          {onOpenSearch && (
-            <button
-              onClick={onOpenSearch}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full glass-dock hover:border-white/30 text-xs text-[#EAE5DF]/85 hover:text-white transition cursor-pointer"
-            >
-              <Search size={12} className="text-[#D4A359]" />
-              <span>Search or Paste YouTube Link</span>
-            </button>
-          )}
-
-          {onOpenStoryStudio && (
-            <button
-              onClick={onOpenStoryStudio}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#1f1912]/90 hover:bg-[#2a2117] border border-[#D4A359]/40 hover:border-[#D4A359] text-xs text-[#EAE5DF] transition shadow-lg cursor-pointer"
-            >
-              <Feather size={12} className="text-[#D4A359]" />
-              <span>Enter The Writer&apos;s Desk</span>
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );

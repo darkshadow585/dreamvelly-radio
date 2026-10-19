@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Play,
   Pause,
@@ -13,12 +13,10 @@ import {
   Maximize,
   Minimize,
   Loader2,
-  Moon,
-  CloudRain,
-  Waves,
+  Sliders,
   ListMusic,
+  Heart,
 } from 'lucide-react';
-import { ambientAudio } from '../utils/ambientAudio';
 
 function formatTime(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00';
@@ -48,26 +46,16 @@ export default function BottomPlayerDock({
   onToggleRepeat,
   onOpenShare,
   onOpenPlaylistModal,
+  onOpenSoundscape,
+  hasActiveSoundscape = false,
+  sleepRemainingSecs = 0,
+  isLiked = false,
+  onToggleLike,
   isFullscreen,
   onToggleFullscreen,
-  onToggleScreenOff,
 }) {
   const [showVolumeSlider, setShowVolumeSlider] = useState(false);
-  const [ambientMode, setAmbientMode] = useState('off'); // 'off' | 'rain' | 'waves'
   const [hoverPercent, setHoverPercent] = useState(null);
-
-  useEffect(() => {
-    if (ambientMode !== 'off' && isPlaying) {
-      ambientAudio.start(ambientMode);
-      ambientAudio.setVolume(0.24);
-    } else {
-      ambientAudio.stop();
-    }
-  }, [ambientMode, isPlaying]);
-
-  const cycleAmbientMode = () => {
-    setAmbientMode((prev) => (prev === 'off' ? 'rain' : prev === 'rain' ? 'waves' : 'off'));
-  };
 
   const progressPercent =
     duration > 0 ? Math.min(100, Math.max(0, (currentTime / duration) * 100)) : 0;
@@ -149,6 +137,18 @@ export default function BottomPlayerDock({
             </div>
 
             <div className="flex items-center gap-0.5 flex-shrink-0">
+              {onToggleLike && currentSong && (
+                <button
+                  onClick={() => onToggleLike(currentSong.id)}
+                  className={`p-1.5 rounded-full transition cursor-pointer ${
+                    isLiked ? 'text-[#D4A359]' : 'text-white/45 hover:text-white'
+                  }`}
+                  title="Like Track"
+                >
+                  <Heart size={15} fill={isLiked ? 'currentColor' : 'none'} />
+                </button>
+              )}
+
               <button
                 onClick={onPrev}
                 className="p-1.5 text-white/70 hover:text-white active:scale-90 transition-all rounded-full cursor-pointer"
@@ -183,17 +183,19 @@ export default function BottomPlayerDock({
                 <SkipForward size={17} />
               </button>
 
-              <button
-                onClick={cycleAmbientMode}
-                className={`p-1.5 rounded-full transition-all active:scale-90 cursor-pointer ${
-                  ambientMode !== 'off'
-                    ? 'text-[#D4A359] bg-[#D4A359]/15'
-                    : 'text-white/50 hover:text-white'
-                }`}
-                title="Cycle Ambient Sound (Rain / Waves / Off)"
-              >
-                {ambientMode === 'waves' ? <Waves size={15} /> : <CloudRain size={15} />}
-              </button>
+              {onOpenSoundscape && (
+                <button
+                  onClick={onOpenSoundscape}
+                  className={`p-1.5 rounded-full transition-all active:scale-90 cursor-pointer ${
+                    hasActiveSoundscape || sleepRemainingSecs > 0
+                      ? 'text-[#D4A359] bg-[#D4A359]/15'
+                      : 'text-white/50 hover:text-white'
+                  }`}
+                  title="Soundscape Mixer & Sleep Timer"
+                >
+                  <Sliders size={15} />
+                </button>
+              )}
 
               <button
                 onClick={onOpenShare}
@@ -209,7 +211,7 @@ export default function BottomPlayerDock({
         {/* ========================================================= */}
         {/* 2. DESKTOP MASTER ACOUSTIC CONSOLE (≥ 640px)              */}
         {/* ========================================================= */}
-        <div className="hidden sm:flex relative pointer-events-auto w-full max-w-[880px] flex-col rounded-[26px] glass-dock text-[#F4EFE8] px-6 py-3.5">
+        <div className="hidden sm:flex relative pointer-events-auto w-full max-w-[900px] flex-col rounded-[26px] glass-dock text-[#F4EFE8] px-6 py-3.5">
           {/* Top Full-Width Precision Interactive Progress Bar */}
           <div className="w-full flex items-center gap-3 mb-2.5 select-none">
             <span className="text-[10.5px] font-mono-tabular text-[#9E968B] w-9 text-right">
@@ -252,27 +254,28 @@ export default function BottomPlayerDock({
 
           {/* Main Console Row */}
           <div className="flex items-center justify-between gap-4">
-            {/* LEFT: Active Track Sleeve & Metadata */}
-            <div
-              onClick={onOpenPlaylistModal}
-              className="flex items-center gap-3.5 min-w-0 w-[260px] md:w-[290px] cursor-pointer group"
-              title="Open Station Queue"
-            >
+            {/* LEFT: Active Track Sleeve, Metadata & Heart Toggle */}
+            <div className="flex items-center gap-3 min-w-0 w-[265px] md:w-[300px]">
               <div
-                className={`relative w-12 h-12 rounded-[12px] overflow-hidden flex-shrink-0 bg-black/50 border transition-all duration-300 ${
+                onClick={onOpenPlaylistModal}
+                className={`relative w-12 h-12 rounded-[12px] overflow-hidden flex-shrink-0 bg-black/50 border transition-all duration-300 cursor-pointer ${
                   isPlaying
                     ? 'border-[#D4A359]/70 shadow-[0_0_15px_rgba(212,163,89,0.25)]'
                     : 'border-white/15'
                 }`}
+                title="Open Station Queue"
               >
                 <img
                   src={currentSong?.cover}
                   alt={currentSong?.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                 />
               </div>
 
-              <div className="min-w-0 flex-1">
+              <div
+                onClick={onOpenPlaylistModal}
+                className="min-w-0 flex-1 cursor-pointer group"
+              >
                 <div className="flex items-center gap-2">
                   <h4 className="text-sm font-semibold text-[#F4EFE8] truncate group-hover:text-[#D4A359] transition-colors">
                     {currentSong?.title}
@@ -296,6 +299,20 @@ export default function BottomPlayerDock({
                   {currentSong?.artist}
                 </p>
               </div>
+
+              {onToggleLike && currentSong && (
+                <button
+                  onClick={() => onToggleLike(currentSong.id)}
+                  className={`p-1.5 rounded-full transition cursor-pointer flex-shrink-0 ${
+                    isLiked
+                      ? 'text-[#D4A359]'
+                      : 'text-[#8C857B] hover:text-[#F4EFE8]'
+                  }`}
+                  title={isLiked ? 'Remove from Liked' : 'Save to Liked Tracks'}
+                >
+                  <Heart size={15} fill={isLiked ? 'currentColor' : 'none'} />
+                </button>
+              )}
             </div>
 
             {/* CENTER: Precision Transport Controls */}
@@ -359,30 +376,27 @@ export default function BottomPlayerDock({
               </button>
             </div>
 
-            {/* RIGHT: Atmosphere Mixer, Up Next Whisper, Share & Volume */}
-            <div className="flex items-center justify-end gap-1.5 w-[260px] md:w-[290px]">
-              {/* Dual-Mode Ambient Soundscape Mixer */}
-              <button
-                onClick={cycleAmbientMode}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer mr-1 ${
-                  ambientMode !== 'off'
-                    ? 'text-[#EAE5DF] bg-[#D4A359]/20 border border-[#D4A359]/50 shadow-[0_0_15px_rgba(212,163,89,0.2)]'
-                    : 'text-[#9E968B] hover:text-[#F4EFE8] hover:bg-white/[0.06] border border-transparent'
-                }`}
-                title="Blend real-time Monsoon Rain or Ocean Waves over the music"
-              >
-                {ambientMode === 'waves' ? (
-                  <Waves size={13} className="text-[#D4A359]" />
-                ) : (
-                  <CloudRain
-                    size={13}
-                    className={ambientMode === 'rain' ? 'text-[#D4A359]' : ''}
-                  />
-                )}
-                <span className="hidden md:inline capitalize">
-                  {ambientMode === 'off' ? 'Atmosphere' : ambientMode}
-                </span>
-              </button>
+            {/* RIGHT: 4-Channel Soundscape Studio, Queue, Share & Volume */}
+            <div className="flex items-center justify-end gap-1.5 w-[265px] md:w-[300px]">
+              {/* 4-Channel Soundscape & Sleep Studio Trigger */}
+              {onOpenSoundscape && (
+                <button
+                  onClick={onOpenSoundscape}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer mr-1 ${
+                    hasActiveSoundscape || sleepRemainingSecs > 0
+                      ? 'text-[#EAE5DF] bg-[#D4A359]/20 border border-[#D4A359]/50 shadow-[0_0_15px_rgba(212,163,89,0.2)]'
+                      : 'text-[#9E968B] hover:text-[#F4EFE8] hover:bg-white/[0.06] border border-transparent'
+                  }`}
+                  title="Open 4-Channel Soundscape Mixer & Sleep Timer"
+                >
+                  <Sliders size={13} className="text-[#D4A359]" />
+                  <span className="hidden md:inline">
+                    {sleepRemainingSecs > 0
+                      ? `${Math.ceil(sleepRemainingSecs / 60)}m`
+                      : 'Atmosphere'}
+                  </span>
+                </button>
+              )}
 
               {/* Queue Modal Trigger */}
               {onOpenPlaylistModal && (
