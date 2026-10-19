@@ -318,21 +318,18 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
           }
         }
 
-        // Mode B: Zero-Quota Browser Neural Voice Fallback
+        // Mode B: Zero-Quota Browser Neural Voice Fallback (Sentence-by-Sentence Acting)
         if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-          const cleanText = (currentStory.paragraphs[sceneIdx].text || '').trim();
+          const sceneObj = currentStory.paragraphs[sceneIdx];
+          const rawScript = (sceneObj.script || sceneObj.text || '').trim();
+          const cleanText = (sceneObj.text || '').trim();
           const estimatedSecs = Math.max(8, Math.round(cleanText.split(/\s+/).length * 0.45));
           setDuration(estimatedSecs);
           setCurrentTime(0);
           setIsPlaying(true);
 
-          const utterance = new SpeechSynthesisUtterance(cleanText);
           const voiceMeta =
             NARRATOR_VOICES.find((v) => v.id === selectedVoice) || NARRATOR_VOICES[0];
-          utterance.pitch = voiceMeta.pitch || 1;
-          utterance.rate = voiceMeta.rate || 0.94;
-          utterance.volume = voiceVolume;
-
           const voices = window.speechSynthesis.getVoices();
           const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
           const preferredVoice = voices.find((v) =>
@@ -340,8 +337,34 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
               ? v.lang.includes('hi') || v.name.toLowerCase().includes('hindi')
               : v.lang.includes('en-IN') || v.lang.includes('en-US')
           );
-          if (preferredVoice) utterance.voice = preferredVoice;
-          utterance.lang = isDevanagari ? 'hi-IN' : 'en-IN';
+
+          // Parse sentences with isolated emotion tags so only tagged sentences whisper/shout
+          const sentenceChunks = [];
+          const pairedRegex = /<(normal|whisper|laugh|anger|gasp|softly|sigh)>([\s\S]*?)<\/\1>/gi;
+          let match;
+          let lastIdx = 0;
+          while ((match = pairedRegex.exec(rawScript)) !== null) {
+            if (match.index > lastIdx) {
+              const plain = rawScript.slice(lastIdx, match.index).replace(/<[^>]+>/g, ' ').trim();
+              if (plain) sentenceChunks.push({ mode: 'normal', text: plain });
+            }
+            const taggedText = match[2].replace(/<[^>]+>/g, ' ').trim();
+            if (taggedText) sentenceChunks.push({ mode: match[1].toLowerCase(), text: taggedText });
+            lastIdx = pairedRegex.lastIndex;
+          }
+          if (sentenceChunks.length === 0) {
+            const rawSentences = cleanText
+              .split(/(?<=[।.!?]["”']?\s+)/)
+              .map((s) => s.trim())
+              .filter(Boolean);
+            for (const s of rawSentences) {
+              let mode = 'normal';
+              if (/फुसफुसा|धीरे से कहा/i.test(s)) mode = 'whisper';
+              else if (/हा\.\.\.\s*हा|हँसते हुए|डरावनी हँसी/i.test(s)) mode = 'laugh';
+              else if (/गुस्से से|चीखकर|चिल्लाया|बाहर निकलो/i.test(s)) mode = 'anger';
+              sentenceChunks.push({ mode, text: s });
+            }
+          }
 
           const startedAt = Date.now();
           speechTimerRef.current = setInterval(() => {
@@ -349,24 +372,54 @@ export function useStoryStudio({ onAudioStarted, onAudioStopped }) {
             setCurrentTime(Math.min(estimatedSecs, elapsed));
           }, 200);
 
-          utterance.onend = () => {
-            if (speechTimerRef.current) clearInterval(speechTimerRef.current);
-            if (runIdRef.current !== currentRunId) return;
-            const totalScenes = storyDataRef.current?.paragraphs?.length || 0;
-            if (sceneIdx + 1 < totalScenes) {
-              if (playSceneAtIndexRef.current) {
-                playSceneAtIndexRef.current(sceneIdx + 1);
-              }
-            } else {
-              setIsPlaying(false);
-              setCurrentTime(0);
-              setActiveParagraphIndex(0);
-              ambientAudio.stop();
-              if (onAudioStoppedRef.current) onAudioStoppedRef.current();
-            }
-          };
+          sentenceChunks.forEach((chunk, idx) => {
+            const utterance = new SpeechSynthesisUtterance(chunk.text);
+            if (preferredVoice) utterance.voice = preferredVoice;
+            utterance.lang = isDevanagari ? 'hi-IN' : 'en-IN';
 
-          window.speechSynthesis.speak(utterance);
+            const basePitch = voiceMeta.pitch || 1;
+            const baseRate = voiceMeta.rate || 0.94;
+
+            if (chunk.mode === 'whisper') {
+              utterance.volume = Math.max(0.28, voiceVolume * 0.45);
+              utterance.rate = Math.max(0.75, baseRate * 0.84);
+              utterance.pitch = Math.max(0.7, basePitch * 0.88);
+            } else if (chunk.mode === 'anger') {
+              utterance.volume = Math.min(1, voiceVolume * 1.0);
+              utterance.rate = Math.min(1.2, baseRate * 1.08);
+              utterance.pitch = Math.max(0.75, basePitch * 0.9);
+            } else if (chunk.mode === 'laugh') {
+              utterance.volume = voiceVolume;
+              utterance.rate = baseRate * 0.92;
+              utterance.pitch = Math.min(1.3, basePitch * 1.12);
+            } else {
+              // Normal narrative sentence: clear full volume and natural cadence
+              utterance.volume = voiceVolume;
+              utterance.rate = baseRate;
+              utterance.pitch = basePitch;
+            }
+
+            if (idx === sentenceChunks.length - 1) {
+              utterance.onend = () => {
+                if (speechTimerRef.current) clearInterval(speechTimerRef.current);
+                if (runIdRef.current !== currentRunId) return;
+                const totalScenes = storyDataRef.current?.paragraphs?.length || 0;
+                if (sceneIdx + 1 < totalScenes) {
+                  if (playSceneAtIndexRef.current) {
+                    playSceneAtIndexRef.current(sceneIdx + 1);
+                  }
+                } else {
+                  setIsPlaying(false);
+                  setCurrentTime(0);
+                  setActiveParagraphIndex(0);
+                  ambientAudio.stop();
+                  if (onAudioStoppedRef.current) onAudioStoppedRef.current();
+                }
+              };
+            }
+
+            window.speechSynthesis.speak(utterance);
+          });
         }
       } catch (err) {
         console.error(`Failed to play scene ${sceneIdx + 1}:`, err);
