@@ -1,0 +1,8 @@
+{
+  "name": "Dreamvalley Radio",
+  "description": "Evergreen romantic melodies and lounge radio curated by KS with YouTube playback and interactive 3D coverflow.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

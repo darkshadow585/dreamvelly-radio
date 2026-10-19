@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Moon, Sparkles, Volume2 } from 'lucide-react';
+import { Moon } from 'lucide-react';
 
 export default function ScreenOffOverlay({
   isActive,
@@ -8,12 +8,16 @@ export default function ScreenOffOverlay({
   isPlaying,
 }) {
   const [timeStr, setTimeStr] = useState('');
+  const [dateStr, setDateStr] = useState('');
 
   useEffect(() => {
     const updateTime = () => {
       const now = new Date();
       setTimeStr(
-        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })
+      );
+      setDateStr(
+        now.toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' })
       );
     };
     updateTime();
@@ -21,7 +25,6 @@ export default function ScreenOffOverlay({
     return () => clearInterval(timer);
   }, []);
 
-  // Keyboard wake up on any key press
   useEffect(() => {
     if (!isActive) return;
     const handleKeyDown = () => {
@@ -36,47 +39,52 @@ export default function ScreenOffOverlay({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-[9999] bg-black text-white flex flex-col justify-between items-center p-6 sm:p-10 select-none cursor-pointer transition-opacity duration-300"
+      className="fixed inset-0 z-[9999] bg-black text-[#F4EFE8] flex flex-col justify-between items-center p-8 sm:p-14 select-none cursor-pointer transition-opacity duration-500"
       style={{ backgroundColor: '#000000' }}
     >
-      {/* Top minimal status indicator */}
+      {/* Top Whisper Status */}
       <div className="w-full flex items-center justify-between opacity-25 hover:opacity-75 transition-opacity">
-        <div className="flex items-center gap-2 text-xs font-mono tracking-widest text-amber-200">
-          <Moon size={14} className="animate-pulse" />
-          <span>OLED SCREEN-OFF MODE</span>
+        <div className="flex items-center gap-2 text-[11px] font-mono-tabular tracking-[0.25em] uppercase text-[#D4A359]">
+          <Moon size={13} />
+          <span>OLED Nightstand</span>
         </div>
-        <div className="text-xs font-mono text-white/50 tracking-wider">
-          {timeStr}
-        </div>
+        <span className="text-[11px] font-mono-tabular tracking-[0.2em] uppercase text-white/40">
+          {dateStr}
+        </span>
       </div>
 
-      {/* Center: Minimalist ambient playing indicator */}
-      <div className="flex flex-col items-center justify-center text-center gap-3 max-w-md pointer-events-none opacity-20 hover:opacity-85 transition-opacity duration-300">
-        <div className="flex items-center gap-1.5 h-6">
-          <span className="w-1 bg-amber-400/80 rounded-full h-3 animate-pulse" />
-          <span className="w-1 bg-amber-400/80 rounded-full h-6 animate-pulse [animation-delay:0.2s]" />
-          <span className="w-1 bg-amber-400/80 rounded-full h-4 animate-pulse [animation-delay:0.4s]" />
-          <span className="w-1 bg-amber-400/80 rounded-full h-5 animate-pulse [animation-delay:0.1s]" />
-          <span className="w-1 bg-amber-400/80 rounded-full h-2 animate-pulse [animation-delay:0.3s]" />
+      {/* Center: Luxury Editorial Chronograph & Breathing Track Whisper */}
+      <div className="flex flex-col items-center justify-center text-center space-y-7 pointer-events-none opacity-35 hover:opacity-85 transition-opacity duration-500">
+        <div className="text-7xl sm:text-9xl font-editorial font-normal tracking-tight text-[#F4EFE8]/90 tabular-nums leading-none">
+          {timeStr}
+        </div>
+
+        <div className="flex items-end justify-center gap-1.5 h-5">
+          {[0.3, 0.7, 0.4, 1, 0.5, 0.8, 0.35].map((h, i) => (
+            <span
+              key={i}
+              className="w-[2px] bg-[#D4A359] rounded-full animate-studio-wave"
+              style={{
+                height: isPlaying ? `${Math.round(h * 100)}%` : '20%',
+                animationDelay: `${i * 0.14}s`,
+              }}
+            />
+          ))}
         </div>
 
         <div className="space-y-1">
-          <h2 className="text-base sm:text-lg font-medium tracking-wide text-[#F4EFE8] truncate max-w-[280px] sm:max-w-md">
-            {currentSong?.title || 'DREAMVALLEY Radio'}
+          <h2 className="text-base sm:text-xl font-editorial text-[#F4EFE8]/90 truncate max-w-xs sm:max-w-md">
+            {currentSong?.title || 'Dreamvalley Sanctuary'}
           </h2>
-          <p className="text-xs text-[#F4EFE8]/60 truncate max-w-[280px] sm:max-w-md">
-            {currentSong?.artist || 'KS Lounge'} {currentSong?.movie ? `• ${currentSong.movie}` : ''}
+          <p className="text-xs text-[#8C857B] truncate max-w-xs sm:max-w-md">
+            {currentSong?.artist}
           </p>
-        </div>
-
-        <div className="mt-2 text-[11px] tracking-widest uppercase text-amber-400/60 font-mono">
-          {isPlaying ? 'Playing in Background' : 'Paused'}
         </div>
       </div>
 
-      {/* Bottom hint */}
-      <div className="text-[11px] font-mono tracking-wider text-white/30 text-center animate-pulse">
-        Tap anywhere or press any key to wake screen
+      {/* Bottom Wake Hint */}
+      <div className="text-[10px] font-mono-tabular tracking-[0.24em] uppercase text-white/20 text-center">
+        Touch anywhere or press any key to wake
       </div>
     </div>
   );

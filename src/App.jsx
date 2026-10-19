@@ -7,6 +7,7 @@ import PlaylistModal from './components/PlaylistModal';
 import ShareModal from './components/ShareModal';
 import AboutModal from './components/AboutModal';
 import SearchModal from './components/SearchModal';
+import StoryStudioModal from './components/StoryStudioModal';
 import ScreenOffOverlay from './components/ScreenOffOverlay';
 import { PLAYLISTS } from './data/playlists';
 import { useYouTubeRadio } from './hooks/useYouTubeRadio';
@@ -55,6 +56,9 @@ export default function App() {
   });
 
   const currentSong = activePlaylist.songs[currentSongIndex] || activePlaylist.songs[0];
+  const nextSong =
+    activePlaylist.songs[(currentSongIndex + 1) % activePlaylist.songs.length] ||
+    activePlaylist.songs[0];
 
   // Playback modes
   const [isShuffle, setIsShuffle] = useState(false);
@@ -63,10 +67,15 @@ export default function App() {
   const [isScreenOffActive, setIsScreenOffActive] = useState(false);
 
   // Modals
-  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(() => initialParams.openModal === 'playlist');
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(
+    () => initialParams.openModal === 'playlist'
+  );
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [isStoryStudioOpen, setIsStoryStudioOpen] = useState(
+    () => initialParams.openModal === 'story'
+  );
 
   // Handle song ending & auto next
   const handleSongEnd = useCallback(() => {
@@ -123,53 +132,57 @@ export default function App() {
     setCurrentSongIndex(0);
   }, []);
 
-  const handleSelectSongById = useCallback((songId) => {
-    const idx = activePlaylist.songs.findIndex((s) => s.id === songId);
-    if (idx !== -1) {
-      setCurrentSongIndex(idx);
-    }
-  }, [activePlaylist.songs]);
+  const handleSelectSongById = useCallback(
+    (songId) => {
+      const idx = activePlaylist.songs.findIndex((s) => s.id === songId);
+      if (idx !== -1) {
+        setCurrentSongIndex(idx);
+      }
+    },
+    [activePlaylist.songs]
+  );
 
   // Fast Play handler for Search & Direct YouTube Play
-  const handlePlayTrack = useCallback((track) => {
-    if (!track || !track.id) return;
+  const handlePlayTrack = useCallback(
+    (track) => {
+      if (!track || !track.id) return;
 
-    const targetPlaylistId = activePlaylistId;
-    const currentSongs = customPlaylistSongs[targetPlaylistId] || [];
+      const targetPlaylistId = activePlaylistId;
+      const currentSongs = customPlaylistSongs[targetPlaylistId] || [];
 
-    const existingIdx = currentSongs.findIndex((s) => s.id === track.id);
-    if (existingIdx !== -1) {
-      // Song exists in active playlist: select it & play fast
-      setCurrentSongIndex(existingIdx);
-      radio.playTrack(track.id);
-    } else {
-      // New track from YouTube search or direct link
-      const newSong = {
-        id: track.id,
-        title: track.title || `Track ${track.id}`,
-        artist: track.artist || 'YouTube Music',
-        movie: track.isYouTube ? 'YouTube Stream' : (track.movie || 'KS Lounge'),
-        duration: track.duration || '3:30',
-        cover: track.cover || `https://i.ytimg.com/vi/${track.id}/hqdefault.jpg`,
-        isCustom: true,
-      };
+      const existingIdx = currentSongs.findIndex((s) => s.id === track.id);
+      if (existingIdx !== -1) {
+        setCurrentSongIndex(existingIdx);
+        radio.playTrack(track.id);
+      } else {
+        const newSong = {
+          id: track.id,
+          title: track.title || `Track ${track.id}`,
+          artist: track.artist || 'YouTube Music',
+          movie: track.isYouTube ? 'YouTube Stream' : track.movie || 'KS Lounge',
+          duration: track.duration || '3:30',
+          cover: track.cover || `https://i.ytimg.com/vi/${track.id}/hqdefault.jpg`,
+          isCustom: true,
+        };
 
-      const insertIndex = Math.min(currentSongIndex + 1, currentSongs.length);
-      const updatedSongs = [
-        ...currentSongs.slice(0, insertIndex),
-        newSong,
-        ...currentSongs.slice(insertIndex),
-      ];
+        const insertIndex = Math.min(currentSongIndex + 1, currentSongs.length);
+        const updatedSongs = [
+          ...currentSongs.slice(0, insertIndex),
+          newSong,
+          ...currentSongs.slice(insertIndex),
+        ];
 
-      setCustomPlaylistSongs((prev) => ({
-        ...prev,
-        [targetPlaylistId]: updatedSongs,
-      }));
+        setCustomPlaylistSongs((prev) => ({
+          ...prev,
+          [targetPlaylistId]: updatedSongs,
+        }));
 
-      setCurrentSongIndex(insertIndex);
-      radio.playTrack(track.id);
-    }
-  }, [activePlaylistId, customPlaylistSongs, currentSongIndex, radio.playTrack]);
+        setCurrentSongIndex(insertIndex);
+        radio.playTrack(track.id);
+      }
+    },
+    [activePlaylistId, customPlaylistSongs, currentSongIndex, radio.playTrack]
+  );
 
   const handleToggleRepeat = useCallback(() => {
     setRepeatMode((prev) => (prev === 'off' ? 'all' : prev === 'all' ? 'one' : 'off'));
@@ -181,9 +194,15 @@ export default function App() {
 
   const handleToggleFullscreen = useCallback(() => {
     if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().then(() => setIsFullscreen(true)).catch(() => {});
+      document.documentElement
+        .requestFullscreen()
+        .then(() => setIsFullscreen(true))
+        .catch(() => {});
     } else {
-      document.exitFullscreen().then(() => setIsFullscreen(false)).catch(() => {});
+      document
+        .exitFullscreen()
+        .then(() => setIsFullscreen(false))
+        .catch(() => {});
     }
   }, []);
 
@@ -198,6 +217,7 @@ export default function App() {
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (['input', 'textarea'].includes(e.target.tagName.toLowerCase())) return;
+      if (isStoryStudioOpen) return;
 
       if (e.code === 'Space') {
         e.preventDefault();
@@ -206,44 +226,55 @@ export default function App() {
         radio.toggleMute();
       } else if (e.code === 'KeyF') {
         handleToggleFullscreen();
-      } else if (e.key === '/' || (e.ctrlKey && e.key === 'k') || (e.metaKey && e.key === 'k')) {
+      } else if (
+        e.key === '/' ||
+        (e.ctrlKey && e.key.toLowerCase() === 'k') ||
+        (e.metaKey && e.key.toLowerCase() === 'k')
+      ) {
         e.preventDefault();
         setIsSearchModalOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [radio.togglePlay, radio.toggleMute, handleToggleFullscreen]);
+  }, [radio.togglePlay, radio.toggleMute, handleToggleFullscreen, isStoryStudioOpen]);
 
   return (
-    <div className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#0a0705] text-white flex flex-col justify-between">
-      {/* 1. Atmospheric Background Scene & Dust/Rain Canvas */}
+    <div className="relative w-full h-[100dvh] min-h-[100dvh] overflow-hidden bg-[#070605] text-[#F4EFE8] flex flex-col justify-between font-ui">
+      {/* 1. Atmospheric Background Scene & Weather/Cosmos Canvas */}
       <BackgroundScene activePlaylist={activePlaylist} />
 
-      {/* 2. Top Header Navigation (Logo, Live Listeners Pill, Search, Screen-Off, Playlist Pill) */}
+      {/* 2. Level 5 Architectural Floating Header */}
       <HeaderNav
         activePlaylist={activePlaylist}
+        isPlaying={radio.isPlaying}
+        onSelectPlaylist={handleSelectPlaylist}
         onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
         onOpenAbout={() => setIsAboutModalOpen(true)}
         onOpenSearch={() => setIsSearchModalOpen(true)}
         onToggleScreenOff={() => setIsScreenOffActive(true)}
+        onOpenStoryStudio={() => setIsStoryStudioOpen(true)}
       />
 
-      {/* 3. 3D Coverflow Song Changing Carousel */}
+      {/* 3. Level 5 3D Vinyl & Spatial Coverflow Stage */}
       <main className="relative z-10 flex-1 w-full min-h-0">
         <CoverflowCarousel
           songs={activePlaylist.songs}
           activeIndex={currentSongIndex}
           onSelectSong={handleSelectSong}
+          onTogglePlay={radio.togglePlay}
           isPlaying={radio.isPlaying}
           activePlaylist={activePlaylist}
           onOpenSearch={() => setIsSearchModalOpen(true)}
+          onOpenStoryStudio={() => setIsStoryStudioOpen(true)}
+          onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
         />
       </main>
 
-      {/* 4. Glassmorphic Bottom Player Dock */}
+      {/* 4. Level 5 Master Acoustic Player Console */}
       <BottomPlayerDock
         currentSong={currentSong}
+        nextSong={nextSong}
         isPlaying={radio.isPlaying}
         isBuffering={radio.isBuffering}
         currentTime={radio.currentTime}
@@ -261,12 +292,13 @@ export default function App() {
         onToggleShuffle={handleToggleShuffle}
         onToggleRepeat={handleToggleRepeat}
         onOpenShare={() => setIsShareModalOpen(true)}
+        onOpenPlaylistModal={() => setIsPlaylistModalOpen(true)}
         isFullscreen={isFullscreen}
         onToggleFullscreen={handleToggleFullscreen}
         onToggleScreenOff={() => setIsScreenOffActive(true)}
       />
 
-      {/* 5. Modals */}
+      {/* 5. Redesigned Level 5 Modals */}
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
@@ -283,6 +315,8 @@ export default function App() {
         currentSongId={currentSong?.id}
         onSelectSongById={handleSelectSongById}
         activePlaylistSongs={activePlaylist.songs}
+        isPlaying={radio.isPlaying}
+        onToggleShuffle={handleToggleShuffle}
       />
 
       <ShareModal
@@ -290,6 +324,7 @@ export default function App() {
         onClose={() => setIsShareModalOpen(false)}
         currentSong={currentSong}
         currentPlaylistId={activePlaylistId}
+        activePlaylistName={activePlaylist.name}
       />
 
       <AboutModal
@@ -297,7 +332,16 @@ export default function App() {
         onClose={() => setIsAboutModalOpen(false)}
       />
 
-      {/* 6. OLED Screen-Off Mode Overlay (Blackout Mode) */}
+      <StoryStudioModal
+        isOpen={isStoryStudioOpen}
+        onClose={() => setIsStoryStudioOpen(false)}
+        onPauseRadio={() => {
+          if (radio.isPlaying) radio.togglePlay();
+        }}
+        onResumeRadio={() => {}}
+      />
+
+      {/* 6. OLED Luxury Chronograph & Zen Blackout Overlay */}
       <ScreenOffOverlay
         isActive={isScreenOffActive}
         onClose={() => setIsScreenOffActive(false)}

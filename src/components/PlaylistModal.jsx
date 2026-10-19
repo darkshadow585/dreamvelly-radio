@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, Music, Disc3, Search } from 'lucide-react';
+import { X, Search, Play, Shuffle } from 'lucide-react';
 import { PLAYLISTS } from '../data/playlists';
 
 export default function PlaylistModal({
@@ -10,93 +10,132 @@ export default function PlaylistModal({
   currentSongId,
   onSelectSongById,
   activePlaylistSongs,
+  isPlaying,
+  onToggleShuffle,
 }) {
   const [filterText, setFilterText] = useState('');
 
   if (!isOpen) return null;
 
-  const currentPlaylist = PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
+  const currentPlaylist =
+    PLAYLISTS.find((p) => p.id === activePlaylistId) || PLAYLISTS[0];
   const playlistSongs = activePlaylistSongs || currentPlaylist.songs;
   const filteredSongs = playlistSongs.filter((s) => {
     if (!filterText.trim()) return true;
     const q = filterText.toLowerCase();
-    return s.title?.toLowerCase().includes(q) || s.artist?.toLowerCase().includes(q) || s.movie?.toLowerCase().includes(q);
+    return (
+      s.title?.toLowerCase().includes(q) ||
+      s.artist?.toLowerCase().includes(q) ||
+      s.movie?.toLowerCase().includes(q)
+    );
   });
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] bg-black/80 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-xl animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-xl max-h-[85dvh] bg-[#140f0c] border border-amber-400/25 rounded-2xl sm:rounded-3xl shadow-[0_25px_60px_rgba(0,0,0,0.95)] overflow-hidden flex flex-col text-[#F4EFE8]"
+        className="relative w-full max-w-2xl max-h-[86dvh] luxury-modal rounded-3xl overflow-hidden flex flex-col text-[#F4EFE8]"
       >
-        {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-white/10 bg-black/40">
-          <div className="flex items-center gap-3">
-            <img
-              src="/ks_logo.png"
-              alt="KS"
-              className="w-10 h-10 rounded-full object-cover border border-amber-400/35 shadow-md"
-            />
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-[#F4EFE8] flex items-center gap-1.5">
-                KS Music Lounge <Sparkles size={15} className="text-amber-400" />
-              </h2>
-              <p className="text-xs text-[#F4EFE8]/55">Select a Curated Playlist or Track</p>
+        {/* 1. ATMOSPHERIC STATION HERO HEADER */}
+        <div className="relative h-36 sm:h-44 w-full overflow-hidden flex flex-col justify-between p-5 sm:p-6 border-b border-white/[0.08]">
+          <img
+            src={currentPlaylist.bg || '/barish_bg.jpg'}
+            alt={currentPlaylist.name}
+            className="absolute inset-0 w-full h-full object-cover opacity-45 scale-105 transition-all duration-700"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#090807] via-[#090807]/65 to-black/40" />
+
+          {/* Top Bar */}
+          <div className="relative z-10 flex items-center justify-between">
+            <div className="flex items-center gap-2 text-[11px] font-mono-tabular uppercase tracking-[0.2em] text-[#D4A359]">
+              <span>{currentPlaylist.badge || 'Curated Station'}</span>
+              <span aria-hidden="true">·</span>
+              <span>{playlistSongs.length} Tracks</span>
             </div>
+
+            <button
+              onClick={onClose}
+              className="p-2 text-white/60 hover:text-white bg-black/40 hover:bg-white/10 border border-white/10 rounded-full transition cursor-pointer"
+              aria-label="Close vault"
+            >
+              <X size={17} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 text-white/60 hover:text-white hover:bg-white/10 rounded-full transition"
-            aria-label="Close modal"
-          >
-            <X size={18} />
-          </button>
+
+          {/* Bottom Hero Title & Description */}
+          <div className="relative z-10 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-editorial font-semibold text-[#F4EFE8] tracking-tight">
+                {currentPlaylist.name.replace(/[^\w\s-]/g, '').trim()}
+              </h2>
+              <p className="text-xs text-[#A8A096] mt-0.5 line-clamp-1">
+                {currentPlaylist.description ||
+                  'Curated atmospheric soundscape for deep listening.'}
+              </p>
+            </div>
+
+            {onToggleShuffle && (
+              <button
+                onClick={() => {
+                  onToggleShuffle();
+                  onClose();
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[#F4EFE8] hover:bg-white text-[#090807] text-xs font-semibold transition active:scale-95 cursor-pointer flex-shrink-0"
+              >
+                <Shuffle size={13} />
+                <span>Shuffle</span>
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* Playlist Channel Selector Tabs (2x2 Grid for 4 Channels) */}
-        <div className="p-2.5 sm:p-3 bg-black/30 border-b border-white/10 grid grid-cols-2 gap-2">
+        {/* 2. 4-STATION VISUAL SWITCHER STRIP */}
+        <div className="p-3 sm:px-6 bg-[#0b0a09] border-b border-white/[0.07] grid grid-cols-2 sm:grid-cols-4 gap-2">
           {PLAYLISTS.map((pl) => {
             const isActive = pl.id === activePlaylistId;
+            const cleanName = pl.name.replace(/[^\w\s-]/g, '').trim();
             return (
               <button
                 key={pl.id}
                 onClick={() => onSelectPlaylist(pl.id)}
-                className={`flex items-center justify-between gap-1.5 py-2 px-3 rounded-xl font-medium text-xs sm:text-sm transition-all ${
+                className={`relative overflow-hidden rounded-xl p-2.5 text-left transition-all cursor-pointer border ${
                   isActive
-                    ? 'bg-amber-400/20 border border-amber-400/40 text-amber-200 shadow-md ring-1 ring-amber-400/20'
-                    : 'bg-white/[0.04] border border-white/5 text-white/65 hover:text-white hover:bg-white/[0.08]'
+                    ? 'bg-[#1a1612] border-[#D4A359]/60 text-[#F4EFE8] shadow-md'
+                    : 'bg-white/[0.02] border-white/[0.06] text-[#9E968B] hover:text-[#F4EFE8] hover:bg-white/[0.05]'
                 }`}
               >
-                <div className="flex items-center gap-1.5 truncate">
-                  <span>{pl.icon || '🎵'}</span>
-                  <span className="truncate font-semibold tracking-wide">{pl.name}</span>
+                <div className="text-xs font-semibold truncate">{cleanName}</div>
+                <div className="text-[10px] font-mono-tabular text-[#8C857B] mt-0.5">
+                  {pl.songs.length} tracks
                 </div>
-                <span className="text-[10px] opacity-60 font-mono flex-shrink-0">
-                  {pl.songs.length}
-                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Quick Filter Input */}
-        <div className="px-3.5 pt-2.5 pb-1 bg-black/20">
+        {/* 3. INSTANT TRACK FILTER */}
+        <div className="px-4 sm:px-6 pt-3 pb-2 bg-[#0b0a09]">
           <div className="relative flex items-center">
-            <Search size={14} className="absolute left-3 text-amber-300/60 pointer-events-none" />
+            <Search
+              size={14}
+              className="absolute left-3.5 text-[#9E968B] pointer-events-none"
+            />
             <input
               type="text"
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              placeholder={`Filter ${currentPlaylist.name} tracks...`}
-              className="w-full pl-8 pr-8 py-1.5 bg-black/40 border border-white/10 focus:border-amber-400/40 rounded-xl text-xs text-white placeholder-white/35 outline-none transition"
+              placeholder={`Filter tracks in ${currentPlaylist.name
+                .replace(/[^\w\s-]/g, '')
+                .trim()}...`}
+              className="w-full pl-9 pr-8 py-2 bg-[#141210] border border-white/[0.08] focus:border-[#D4A359]/50 rounded-xl text-xs text-[#F4EFE8] placeholder-[#8C857B] outline-none transition"
             />
             {filterText && (
               <button
                 onClick={() => setFilterText('')}
-                className="absolute right-2.5 text-white/40 hover:text-white"
+                className="absolute right-3 text-[#8C857B] hover:text-white cursor-pointer"
               >
                 <X size={13} />
               </button>
@@ -104,13 +143,8 @@ export default function PlaylistModal({
           </div>
         </div>
 
-        {/* Songs List for Active Playlist */}
-        <div className="flex-1 overflow-y-auto p-3.5 space-y-1.5 no-scrollbar">
-          <div className="px-2 py-1 text-[11px] uppercase tracking-wider text-amber-300/60 font-semibold flex items-center justify-between">
-            <span>{currentPlaylist.badge || currentPlaylist.name}</span>
-            <span className="font-mono">{filteredSongs.length} Tracks</span>
-          </div>
-
+        {/* 4. EDITORIAL TRACKLIST */}
+        <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-2 space-y-1 no-scrollbar">
           {filteredSongs.map((song, index) => {
             const isCurrent = song.id === currentSongId;
             return (
@@ -122,56 +156,71 @@ export default function PlaylistModal({
                 }}
                 className={`flex items-center gap-3.5 p-2.5 rounded-xl cursor-pointer transition-all group ${
                   isCurrent
-                    ? 'bg-amber-400/20 border border-amber-400/35 text-white shadow-sm'
-                    : 'hover:bg-white/[0.06] text-white/80 border border-transparent'
+                    ? 'bg-[#1a1612] border border-[#D4A359]/40 text-[#F4EFE8]'
+                    : 'hover:bg-white/[0.04] text-[#EAE5DF]/85 border border-transparent'
                 }`}
               >
-                <div className="w-6 text-center text-xs font-mono text-white/40 group-hover:text-amber-300">
-                  {isCurrent ? (
-                    <span className="text-amber-400 font-bold">▶</span>
+                {/* Index or Live Equalizer */}
+                <div className="w-6 flex items-center justify-center text-xs font-mono-tabular text-[#8C857B]">
+                  {isCurrent && isPlaying ? (
+                    <div className="flex items-end gap-[2px] h-3">
+                      {[0.4, 1, 0.6].map((h, i) => (
+                        <span
+                          key={i}
+                          className="w-[2px] bg-[#D4A359] rounded-full animate-studio-wave"
+                          style={{
+                            height: `${Math.round(h * 100)}%`,
+                            animationDelay: `${i * 0.14}s`,
+                          }}
+                        />
+                      ))}
+                    </div>
+                  ) : isCurrent ? (
+                    <Play size={12} className="text-[#D4A359]" fill="currentColor" />
                   ) : (
-                    index + 1
+                    <span>{index + 1 < 10 ? `0${index + 1}` : index + 1}</span>
                   )}
                 </div>
 
-                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-black/40 border border-white/10 relative">
+                {/* Sleeve Thumbnail */}
+                <div className="w-11 h-11 rounded-lg overflow-hidden flex-shrink-0 bg-black/50 border border-white/10">
                   <img
                     src={song.cover}
                     alt={song.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
-                  {isCurrent && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                      <Disc3 size={16} className="text-amber-400 animate-spin" />
-                    </div>
-                  )}
                 </div>
 
+                {/* Title & Unboxed Metadata */}
                 <div className="flex-1 min-w-0">
                   <p
-                    className={`text-sm font-medium truncate ${
-                      isCurrent ? 'text-amber-300 font-semibold' : 'text-[#F4EFE8]'
+                    className={`text-sm truncate ${
+                      isCurrent
+                        ? 'text-[#D4A359] font-semibold'
+                        : 'text-[#F4EFE8] font-medium'
                     }`}
                   >
                     {song.title}
                   </p>
-                  <p className="text-xs text-[#F4EFE8]/50 truncate">
-                    {song.artist} {song.movie ? `• ${song.movie}` : ''}
-                  </p>
+                  <div className="flex items-center gap-1.5 text-xs text-[#9E968B] truncate mt-0.5">
+                    <span className="truncate">{song.artist}</span>
+                    {song.movie && (
+                      <>
+                        <span aria-hidden="true">·</span>
+                        <span className="truncate text-[#8C857B]">{song.movie}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                <div className="text-xs text-[#F4EFE8]/40 font-mono pr-2 tabular-nums">
+                {/* Duration */}
+                <div className="text-xs text-[#8C857B] font-mono-tabular pr-1">
                   {song.duration}
                 </div>
               </div>
             );
           })}
-        </div>
-
-        {/* Footer info */}
-        <div className="p-3 border-t border-white/10 bg-black/40 text-center text-[11px] text-[#F4EFE8]/45">
-          {currentPlaylist.description || 'Curated with passion by KS • High Fidelity Sound'}
         </div>
       </div>
     </div>

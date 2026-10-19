@@ -20,68 +20,61 @@
 
 @layer base {
   body {
-    background-color: #0a0705;
+    background-color: #070605;
     color: #F4EFE8;
     user-select: none;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
     overflow: hidden;
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', system-ui, sans-serif;
   }
 }
 
-/* Exact Card Sizing from Deluxe Salon Songs */
-.track-card-size {
-  width: 170px;
-}
-@media (min-width: 450px) {
-  .track-card-size {
-    width: 190px;
-  }
-}
-@media (min-width: 640px) {
-  .track-card-size {
-    width: 195px;
-  }
-}
-@media (min-width: 768px) {
-  .track-card-size {
-    width: 190px;
-  }
-}
-@media (min-width: 1024px) {
-  .track-card-size {
-    width: 215px;
-  }
+/* Typography Systems */
+.font-editorial {
+  font-family: 'Cormorant Garamond', 'Noto Serif Devanagari', Georgia, serif;
 }
 
-/* Exact 3D Perspective Card Transforms */
-.track-card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%) translateX(var(--tx-m)) rotateY(var(--ry-m)) scale(var(--sc-m));
-  opacity: var(--op-m);
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.5s ease;
-  transform-style: preserve-3d;
-  will-change: transform, opacity;
+.font-ui {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', system-ui, sans-serif;
 }
 
-@media (min-width: 768px) {
-  .track-card {
-    transform: translate(-50%, -50%) translateX(var(--tx-d)) rotateY(var(--ry-d)) scale(var(--sc-d));
-    opacity: var(--op-d);
-  }
+.font-mono-tabular {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+.hindi-serif {
+  font-family: 'Cormorant Garamond', 'Noto Serif Devanagari', Georgia, serif;
+  line-height: 2.02;
+}
+
+.hindi-sans {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', system-ui, sans-serif;
+  line-height: 1.65;
+}
+
+/* Literary Drop Cap for Story Studio Opening Paragraph */
+.story-dropcap::first-letter {
+  float: left;
+  font-family: 'Cormorant Garamond', 'Noto Serif Devanagari', Georgia, serif;
+  font-size: 3.6rem;
+  line-height: 0.82;
+  padding-top: 4px;
+  padding-right: 12px;
+  padding-bottom: 2px;
+  color: #D4A359;
+  font-weight: 600;
 }
 
 /* Hero Heading */
 .hero-heading {
   font-family: 'TekoHindi', 'Teko', sans-serif;
-  letter-spacing: -0.01em;
-  text-shadow: 
-    0 2px 30px rgba(0, 0, 0, 0.5), 
-    0 4px 60px rgba(0, 0, 0, 0.3), 
-    0 0 100px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.015em;
+  text-shadow:
+    0 4px 36px rgba(0, 0, 0, 0.85),
+    0 2px 14px rgba(0, 0, 0, 0.65);
 }
 
 /* No Scrollbar utility */
@@ -91,6 +84,31 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Realistic Physical Vinyl Record Grooves & Light Sheen */
+.vinyl-disc-surface {
+  background:
+    conic-gradient(
+      from 35deg at 50% 50%,
+      rgba(255, 255, 255, 0.14) 0deg,
+      transparent 40deg,
+      transparent 140deg,
+      rgba(255, 255, 255, 0.12) 180deg,
+      transparent 220deg,
+      transparent 320deg,
+      rgba(255, 255, 255, 0.14) 360deg
+    ),
+    repeating-radial-gradient(
+      circle at 50% 50%,
+      #0c0c0f 0px,
+      #0c0c0f 2px,
+      #191920 3px,
+      #0c0c0f 4px
+    );
+  box-shadow:
+    0 18px 45px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 /* Vinyl & Glow Keyframes */
@@ -104,34 +122,112 @@
 }
 
 .animate-vinyl {
-  animation: vinyl-spin 7s linear infinite;
+  animation: vinyl-spin 6.5s linear infinite;
+}
+
+@keyframes vinyl-spin-slow {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-vinyl-reverse {
+  animation: vinyl-spin-slow 15s linear infinite;
 }
 
 @keyframes pulse-halo {
   0%, 100% {
-    opacity: 0.75;
+    opacity: 0.72;
     transform: scale(1);
   }
   50% {
     opacity: 1;
-    transform: scale(1.04);
+    transform: scale(1.045);
   }
 }
 
 .animate-pulse-halo {
-  animation: pulse-halo 3s ease-in-out infinite;
+  animation: pulse-halo 3.2s ease-in-out infinite;
 }
 
-/* True Liquid Glassmorphism Dock */
+/* Level 5 Architectural Obsidian Glass Surface */
 .glass-dock {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.09) 0%, rgba(22, 16, 12, 0.58) 35%, rgba(10, 7, 5, 0.72) 100%);
-  backdrop-filter: blur(32px) saturate(180%);
-  -webkit-backdrop-filter: blur(32px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-top-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 
-    0 24px 60px rgba(0, 0, 0, 0.85),
-    0 4px 15px rgba(0, 0, 0, 0.4),
-    inset 0 1px 1.5px rgba(255, 255, 255, 0.25),
-    inset 0 -1px 1px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(
+    145deg,
+    rgba(22, 19, 17, 0.82) 0%,
+    rgba(11, 10, 9, 0.92) 100%
+  );
+  backdrop-filter: blur(36px) saturate(190%);
+  -webkit-backdrop-filter: blur(36px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 28px 70px rgba(0, 0, 0, 0.9),
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.luxury-modal {
+  background: linear-gradient(
+    165deg,
+    rgba(20, 18, 16, 0.96) 0%,
+    rgba(9, 8, 7, 0.98) 100%
+  );
+  backdrop-filter: blur(40px) saturate(180%);
+  -webkit-backdrop-filter: blur(40px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  box-shadow:
+    0 35px 100px rgba(0, 0, 0, 0.96),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Story Reading Glowing Underline Animation */
+@keyframes story-underline-flow {
+  0% {
+    background-position: -200% bottom;
+    filter: drop-shadow(0 0 3px rgba(212, 163, 89, 0.45));
+  }
+  50% {
+    filter: drop-shadow(0 0 10px rgba(212, 163, 89, 0.95));
+  }
+  100% {
+    background-position: 200% bottom;
+    filter: drop-shadow(0 0 3px rgba(212, 163, 89, 0.45));
+  }
+}
+
+.story-active-underline {
+  background-image: linear-gradient(
+    90deg,
+    rgba(212, 163, 89, 0.15) 0%,
+    rgba(232, 191, 122, 0.98) 50%,
+    rgba(212, 163, 89, 0.15) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 200% 2px;
+  background-position: 0% bottom;
+  animation: story-underline-flow 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  padding-bottom: 4px;
+  display: inline;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Acoustic Equalizer Wave */
+@keyframes studio-wave {
+  0%, 100% {
+    transform: scaleY(0.25);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.animate-studio-wave {
+  animation: studio-wave 1.2s ease-in-out infinite;
+  transform-origin: bottom;
 }
